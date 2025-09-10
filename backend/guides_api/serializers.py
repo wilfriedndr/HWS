@@ -26,10 +26,11 @@ class ActivitySerializer(serializers.ModelSerializer):
 
 
 class GuideInvitationSerializer(serializers.ModelSerializer):
+    invited_user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True)
     class Meta:
         model = GuideInvitation
         fields = ["id", "guide", "invited_email", "invited_user", "created_at"]
-        read_only_fields = ["id", "invited_user", "created_at"]
+        read_only_fields = ["id", "created_at"]
 
 
 class GuideSerializer(serializers.ModelSerializer):
@@ -53,8 +54,11 @@ class GuideSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "owner", "created_at", "updated_at", "activities"]
 
     def create(self, validated_data):
-        request = self.context.get("request")
-        validated_data["owner"] = request.user
+        request = self.context.get("request", None)
+        if request and getattr(request, "user", None):
+            validated_data["owner"] = request.user
+        else:
+            raise serializers.ValidationError("Utilisateur non authentifié")
         return super().create(validated_data)
 
 class UserBaseSerializer(serializers.ModelSerializer):
@@ -71,7 +75,6 @@ class UserBaseSerializer(serializers.ModelSerializer):
 
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
-    # rendre role write_only pour ne pas tenter de le lire depuis l'instance
     role = serializers.ChoiceField(choices=["admin", "user"], write_only=True)
 
     class Meta:
@@ -89,12 +92,10 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return user
 
     def to_representation(self, instance):
-        # pour la réponse, réutiliser le serializer "lecture" (UserBaseSerializer)
         return UserBaseSerializer(instance, context=self.context).data
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
-    # champ role en entrée uniquement
     role = serializers.ChoiceField(choices=["admin", "user"], required=False, write_only=True)
 
     class Meta:

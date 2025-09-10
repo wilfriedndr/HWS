@@ -1,60 +1,76 @@
-from django.db.models import Q, Prefetch
-from rest_framework import viewsets, mixins, permissions, status
-from rest_framework.decorators import action, api_view, permission_classes
+from django.db.models import Q
+from rest_framework import viewsets, mixins, permissions
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 
 from .models import Guide, Activity, GuideInvitation
-from .serializers import *
+from .serializers import (
+    GuideSerializer,
+    ActivitySerializer,
+    GuideInvitationSerializer,
+    UserBaseSerializer,
+    UserCreateSerializer,
+    UserUpdateSerializer,
+)
 from .permissions import IsAdminOrReadOnly
-
 
 User = get_user_model()
 
 
-def visible_guides_q(user):
+def visible_guides_q(user, prefix=""):
     """
-    Règle métier visibilité:
-    - Admin: tout voir
-    - Sinon: guides dont il est owner
-             ou avec une invitation liée à son user
-             ou invitée sur son email
+    Q pour filtrer les Guides visibles par `user`.
+
+    Règle appliquée :
+    - Admins (is_staff) verront tout (géré dans get_queryset, pas ici).
+    - Non-admins ne voient QUE les guides où :
+        - ils sont invités via invited_user
+        - ou ils sont invités via invited_email (comparaison case-insensitive)
+    - prefix permet d'utiliser la même Q pour les Activity queryset (ex: prefix="guide__")
     """
-    return Q(owner=user) | Q(invitations__invited_user=user) | Q(invitations__invited_email=user.email)
+    q = Q(**{f"{prefix}invitations__invited_user": user})
+    user_email = getattr(user, "email", None)
+    if user_email:
+        q = q | Q(**{f"{prefix}invitations__invited_email__iexact": user_email})
+    return q
 
 
 class GuideViewSet(viewsets.ModelViewSet):
+    """
+    - Admin: CRUD complet sur les guides
+    - Non-admin: lecture uniquement des guides où il est invité
+    """
+    queryset = Guide.objects.all()
     serializer_class = GuideSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
-        base = Guide.objects.all().select_related("owner").prefetch_related(
-            Prefetch("activities", queryset=Activity.objects.order_by("day", "order", "id"))
-        )
         user = self.request.user
+        qs = super().get_queryset().select_related("owner")
+        if not user or not user.is_authenticated:
+            return qs.none()
         if user.is_staff:
-            return base.distinct()
-        return base.filter(visible_guides_q(user)).distinct()
+            return qs.distinct()
+        return qs.filter(visible_guides_q(user)).distinct()
 
-    # Route : /api/guides/{id}/activities/
-    @action(detail=True, methods=["get"], permission_classes=[permissions.IsAuthenticated])
-    def activities(self, request, pk=None):
-        guide = self.get_object()
-        qs = guide.activities.all()
-        serializer = ActivitySerializer(qs, many=True)
-        return Response(serializer.data)
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
 
 class ActivityViewSet(viewsets.ModelViewSet):
+    queryset = Activity.objects.select_related("guide").all()
     serializer_class = ActivitySerializer
-    permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         user = self.request.user
-        qs = Activity.objects.select_related("guide")
+        qs = super().get_queryset()
+        if not user or not user.is_authenticated:
+            return qs.none()
         if user.is_staff:
-            return qs
-        return qs.filter(visible_guides_q(user)).distinct()
+            return qs.distinct()
+        return qs.filter(visible_guides_q(user, prefix="guide__")).distinct()
 
 
 class GuideInvitationViewSet(
@@ -62,7 +78,7 @@ class GuideInvitationViewSet(
 ):
     """
     - Admin: lister/créer/supprimer des invitations pour un guide
-    - Utilisateur: lecture seule des invitations visibles (pratique pour debug)
+    - Utilisateur: lecture seule des invitations visibles
     """
     serializer_class = GuideInvitationSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
@@ -72,7 +88,8 @@ class GuideInvitationViewSet(
         qs = GuideInvitation.objects.select_related("guide", "invited_user")
         if user.is_staff:
             return qs
-        return qs.filter(Q(invited_user=user) | Q(invited_email=user.email) | Q(guide__owner=user)).distinct()
+        return qs.filter(Q(invited_user=user) | Q(invited_email__iexact=user.email) | Q(guide__owner=user)).distinct()
+
 
 @api_view(["GET"])
 @permission_classes([permissions.IsAuthenticated])
@@ -89,6 +106,7 @@ def me(request):
         },
         status=200,
     )
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """
