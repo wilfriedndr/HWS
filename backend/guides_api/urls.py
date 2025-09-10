@@ -1,10 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import GuideViewSet, ActivityViewSet, GuideInvitationViewSet, me
+from .views import GuideViewSet, ActivityViewSet, GuideInvitationViewSet, me, UserViewSet
 
 router = DefaultRouter()
-
-
+router.register(r"users", UserViewSet, basename="user")
 router.register(r"guides", GuideViewSet, basename="guide")
 router.register(r"activites", ActivityViewSet, basename="activite")
 router.register(r"invitations", GuideInvitationViewSet, basename="invitation")

@@ -1,11 +1,15 @@
 from django.db.models import Q, Prefetch
-from rest_framework import viewsets, mixins, permissions
+from rest_framework import viewsets, mixins, permissions, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
+from django.contrib.auth import get_user_model
 
 from .models import Guide, Activity, GuideInvitation
-from .serializers import GuideSerializer, ActivitySerializer, GuideInvitationSerializer
+from .serializers import *
 from .permissions import IsAdminOrReadOnly
+
+
+User = get_user_model()
 
 
 def visible_guides_q(user):
@@ -70,7 +74,6 @@ class GuideInvitationViewSet(
             return qs
         return qs.filter(Q(invited_user=user) | Q(invited_email=user.email) | Q(guide__owner=user)).distinct()
 
-
 @api_view(["GET"])
 @permission_classes([permissions.IsAuthenticated])
 def me(request):
@@ -86,3 +89,17 @@ def me(request):
         },
         status=200,
     )
+
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    Admin uniquement: CRUD des utilisateurs
+    """
+    queryset = User.objects.all().order_by("id")
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return UserCreateSerializer
+        if self.action in ("update", "partial_update"):
+            return UserUpdateSerializer
+        return UserBaseSerializer
