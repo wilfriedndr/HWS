@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: hws-db
+    env_file:
+      - ./.env
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hws-backend
+    env_file:
+      - ./.env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    command: ["/entrypoint.sh"]
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hws-frontend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app:cached
+      - /app/node_modules
+    command: sh -c "npx ng serve --host 0.0.0.0 --port 4200 --poll 2000"
+    restart: unless-stopped
+
