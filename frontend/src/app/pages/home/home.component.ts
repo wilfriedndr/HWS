@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 import { Guide } from '../../api.types';
@@ -16,8 +17,8 @@ export default class HomeComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private api = inject(ApiService);
+  private router = inject(Router);
 
-  // État UI
   loadingLogin = false;
   loginError: string | null = null;
 
@@ -67,6 +68,10 @@ export default class HomeComponent {
         this.guidesLoading = false;
       }
     });
+  }
+
+  viewGuideDetails(guideId: number) {
+    this.router.navigate(['/guide', guideId]);
   }
 
   logout() {

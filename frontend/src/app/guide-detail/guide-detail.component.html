@@ -1,0 +1,98 @@
+<div class="guide-detail-container">
+  <!-- bouton retour -->
+  <div class="header">
+    <button class="btn-back" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i> Retour aux guides
+    </button>
+  </div>
+
+  <!-- chargement des guides-->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Chargement des détails du guide...</p>
+  </div>
+
+  <!-- erreur -->
+  <div *ngIf="error && !loading" class="error">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+    <button class="btn btn-primary" (click)="goBack()">Retour aux guides</button>
+  </div>
+
+  <!-- contenu du guide -->
+  <div *ngIf="guide && !loading && !error" class="guide-content">
+    <!-- en-tête du guide -->
+    <div class="guide-header">
+      <h1>{{ guide.title }}</h1>
+      <div class="guide-meta">
+        <div class="meta-item">
+          <i class="fas fa-calendar"></i>
+          <span>{{ guide.days }} jour{{ guide.days > 1 ? 's' : '' }}</span>
+        </div>
+        <div class="meta-item">
+          <i class="fas fa-car"></i>
+          <span>{{ guide.mobility }}</span>
+        </div>
+        <div class="meta-item">
+          <i class="fas fa-leaf"></i>
+          <span>{{ guide.season }}</span>
+        </div>
+        <div class="meta-item">
+          <i class="fas fa-users"></i>
+          <span>{{ guide.audience }}</span>
+        </div>
+      </div>
+      <p class="guide-description">{{ guide.description }}</p>
+    </div>
+
+    <!-- programme -->
+    <div class="days-program">
+      <h2>Programme détaillé</h2>
+
+      <div *ngFor="let day of getDays()" class="day-section">
+        <h3 class="day-title">
+          <i class="fas fa-calendar-day"></i>
+          Jour {{ day }}
+        </h3>
+
+        <div class="activities-list">
+          <div *ngFor="let activity of activitiesByDay[day]; let i = index" class="activity-card">
+            <div class="activity-header">
+              <span class="activity-order">{{ activity.order }}</span>
+              <h4 class="activity-title">{{ activity.title }}</h4>
+              <span class="activity-category">{{ getActivityCategoryLabel(activity.category) }}</span>
+            </div>
+
+            <p *ngIf="activity.description" class="activity-description">
+              {{ activity.description }}
+            </p>
+
+            <div class="activity-details">
+              <div *ngIf="activity.address" class="detail-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>{{ activity.address }}</span>
+              </div>
+
+              <div *ngIf="activity.hours" class="detail-item">
+                <i class="fas fa-clock"></i>
+                <span>{{ activity.hours }}</span>
+              </div>
+
+              <div *ngIf="activity.phone" class="detail-item">
+                <i class="fas fa-phone"></i>
+                <a href="tel:{{ activity.phone }}">{{ activity.phone }}</a>
+              </div>
+
+              <div *ngIf="activity.website" class="detail-item">
+                <i class="fas fa-globe"></i>
+                <a href="{{ activity.website }}" target="_blank" rel="noopener noreferrer">
+                  Site web
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

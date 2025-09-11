@@ -1,6 +1,6 @@
 <section class="home">
   <div class="home-container">
-    
+
     <div class="welcome-header">
       <h1>HWS Guides</h1>
       <p class="subtitle" *ngIf="!connected">Bienvenue ! Connecte-toi pour consulter tes guides.</p>
@@ -13,32 +13,18 @@
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
           <div class="form-group">
             <label class="form-label">Identifiant</label>
-            <input 
-              type="text" 
-              formControlName="username" 
-              placeholder="nom d'utilisateur" 
-              class="form-input"
-            />
+            <input type="text" formControlName="username" placeholder="nom d'utilisateur" class="form-input" />
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">Mot de passe</label>
-            <input 
-              type="password" 
-              formControlName="password" 
-              placeholder="mot de passe" 
-              class="form-input"
-            />
+            <input type="password" formControlName="password" placeholder="mot de passe" class="form-input" />
           </div>
-          
-          <button 
-            type="submit" 
-            [disabled]="loadingLogin || form.invalid"
-            class="btn btn-primary submit-btn"
-          >
+
+          <button type="submit" [disabled]="loadingLogin || form.invalid" class="btn btn-primary submit-btn">
             {{ loadingLogin ? 'Connexion…' : 'Se connecter' }}
           </button>
-          
+
           <div class="error" *ngIf="loginError">{{ loginError }}</div>
         </form>
         <p class="hint">Utilise un utilisateur de démo créé via le seeding de users.</p>
@@ -52,7 +38,6 @@
           <div class="user-details">
             <h2>Mes guides</h2>
             <span class="user-role">Utilisateur connecté</span>
-
           </div>
           <button (click)="logout()" class="btn btn-secondary logout-btn">
             Déconnexion
@@ -64,7 +49,7 @@
         <div *ngIf="guidesLoading" class="empty-state">
           <p>Chargement des guides…</p>
         </div>
-        
+
         <div class="error" *ngIf="guidesError">{{ guidesError }}</div>
 
         <ul class="guides-list" *ngIf="!guidesLoading && !guidesError && guides.length > 0">
@@ -78,6 +63,11 @@
               <span class="transport-tag">🚗 {{ g.mobility }}</span>
               <span class="transport-tag">🌤️ {{ g.season }}</span>
               <span class="transport-tag">👥 {{ g.audience }}</span>
+            </div>
+            <div class="guide-actions">
+              <button class="btn btn-primary btn-detail" (click)="viewGuideDetails(g.id)">
+                Voir détails →
+              </button>
             </div>
           </li>
         </ul>

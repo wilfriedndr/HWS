@@ -13,14 +13,14 @@
 .welcome-header {
   text-align: center;
   margin-bottom: var(--spacing-2xl);
-  
+
   h1 {
     font-size: var(--font-size-3xl);
     font-weight: 700;
     color: var(--gray-900);
     margin: 0 0 var(--spacing-sm) 0;
   }
-  
+
   .subtitle {
     font-size: var(--font-size-lg);
     color: var(--gray-600);
@@ -34,7 +34,7 @@
   box-shadow: var(--shadow-lg);
   padding: var(--spacing-2xl);
   margin-bottom: var(--spacing-xl);
-  
+
   h2 {
     font-size: var(--font-size-xl);
     font-weight: 600;
@@ -42,17 +42,17 @@
     margin: 0 0 var(--spacing-lg) 0;
     text-align: center;
   }
-  
+
   .auth-form {
     .form-group {
       margin-bottom: var(--spacing-lg);
     }
-    
+
     .form-input {
       height: 48px;
       font-size: var(--font-size-base);
     }
-    
+
     .submit-btn {
       width: 100%;
       height: 48px;
@@ -69,20 +69,20 @@
   box-shadow: var(--shadow);
   padding: var(--spacing-xl);
   margin-bottom: var(--spacing-xl);
-  
+
   .user-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0;
-    
+
     .user-details {
       h2 {
         font-size: var(--font-size-xl);
         color: var(--gray-800);
         margin: 0 0 var(--spacing-xs) 0;
       }
-      
+
       .user-role {
         display: inline-block;
         background: var(--primary-light);
@@ -94,13 +94,13 @@
         text-transform: uppercase;
       }
     }
-    
+
     .logout-btn {
       background: var(--white);
       color: var(--gray-600);
       border: var(--border);
       font-size: var(--font-size-sm);
-      
+
       &:hover:not(:disabled) {
         background: var(--gray-50);
         color: var(--gray-700);
@@ -117,34 +117,33 @@
     padding: 0;
     margin: 0;
   }
-  
+
   .guide-item {
     background: var(--white);
     border: var(--border);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-lg);
     transition: all 0.2s ease;
-    cursor: pointer;
-    
+
     &:hover {
       transform: translateY(-2px);
       box-shadow: var(--shadow-lg);
       border-color: var(--primary-light);
     }
-    
+
     .guide-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       margin-bottom: var(--spacing-sm);
-      
+
       h4 {
         font-size: var(--font-size-lg);
         color: var(--gray-800);
         margin: 0;
         font-weight: 600;
       }
-      
+
       .guide-days {
         background: var(--secondary-light);
         color: var(--secondary);
@@ -155,20 +154,20 @@
         white-space: nowrap;
       }
     }
-    
+
     .guide-description {
       color: var(--gray-600);
       font-size: var(--font-size-base);
       line-height: 1.5;
       margin: var(--spacing-sm) 0;
     }
-    
+
     .guide-transport {
       display: flex;
       gap: var(--spacing-xs);
       flex-wrap: wrap;
       margin-top: var(--spacing-md);
-      
+
       .transport-tag {
         background: var(--gray-100);
         color: var(--gray-600);
@@ -180,6 +179,23 @@
         gap: var(--spacing-xs);
       }
     }
+
+    .guide-actions {
+      margin-top: var(--spacing-md);
+      padding-top: var(--spacing-md);
+      border-top: var(--border);
+      text-align: right;
+
+      .btn-detail {
+        font-size: var(--font-size-sm);
+        padding: var(--spacing-xs) var(--spacing-md);
+        transition: all 0.2s ease;
+        
+        &:hover {
+          transform: translateX(3px);
+        }
+      }
+    }
   }
 }
 
@@ -187,39 +203,45 @@
   text-align: center;
   padding: var(--spacing-2xl);
   color: var(--gray-500);
-  
+
   p {
     font-size: var(--font-size-lg);
     margin: 0;
   }
 }
 
-// Responsive
 @media (max-width: 768px) {
   .home-container {
     padding: 0 var(--spacing-sm);
   }
-  
+
   .auth-card {
     padding: var(--spacing-xl);
   }
-  
+
   .user-header {
     flex-direction: column;
     align-items: flex-start !important;
     gap: var(--spacing-md);
-    
+
     .logout-btn {
       align-self: flex-end;
     }
   }
-  
+
   .guide-header {
     flex-direction: column !important;
     gap: var(--spacing-sm);
-    
+
     .guide-days {
       align-self: flex-start;
+    }
+  }
+  .guide-actions {
+    text-align: left;
+    
+    .btn-detail {
+      width: 100%;
     }
   }
 }

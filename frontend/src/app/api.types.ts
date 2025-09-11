@@ -6,6 +6,7 @@ export interface Guide {
   mobility: string;
   season: string;
   audience: string;
+  activities?: Activity[];
 }
 
 export interface Activity {
