@@ -1,17 +1,17 @@
-from django.conf import settings
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Guide(models.Model):
-    class Mobilite(models.TextChoices):
+    class Mobility(models.TextChoices):
         VOITURE = "voiture", "Voiture"
-        VELO = "velo", "Vélo"
-        PIED = "pied", "À pied"
+        VELO = "vélo", "Vélo"
+        PIED = "à pied", "À pied"
         MOTO = "moto", "Moto"
+        TRANSPORT_PUBLIC = "transport public", "Transport public"
 
-
-    class Saison(models.TextChoices):
-        ETE = "ete", "Été"
+    class Season(models.TextChoices):
+        ETE = "été", "Été"
         PRINTEMPS = "printemps", "Printemps"
         AUTOMNE = "automne", "Automne"
         HIVER = "hiver", "Hiver"
@@ -19,20 +19,16 @@ class Guide(models.Model):
     class Audience(models.TextChoices):
         FAMILLE = "famille", "Famille"
         SEUL = "seul", "Seul"
-        GROUPE = "groupe", "En groupe"
-        AMIS = "amis", "Entre amis"
+        GROUPE = "en groupe", "En groupe"
+        AMIS = "entre amis", "Entre amis"
 
     title = models.CharField("Titre", max_length=200)
-    description = models.TextField("Description", blank=True)
-    days = models.PositiveIntegerField("Nombre de jours", default=1)
-    mobility = models.CharField("Mobilité", max_length=10, choices=Mobilite.choices)
-    season = models.CharField("Saison", max_length=12, choices=Saison.choices)
-    audience = models.CharField("Pour qui", max_length=12, choices=Audience.choices)
-
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="guides_possedes"
-    )
-
+    description = models.TextField("Description")
+    days = models.PositiveIntegerField("Nombre de jours")
+    mobility = models.CharField("Mobilité", max_length=20, choices=Mobility.choices)
+    season = models.CharField("Saison", max_length=15, choices=Season.choices)
+    audience = models.CharField("Public", max_length=15, choices=Audience.choices)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="owned_guides")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -78,18 +74,23 @@ class Activity(models.Model):
 
 class GuideInvitation(models.Model):
     guide = models.ForeignKey(Guide, on_delete=models.CASCADE, related_name="invitations")
-    invited_email = models.EmailField("Email invité")
     invited_user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True, blank=True, on_delete=models.SET_NULL,
-        related_name="invitations_recues",
+        User, 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True,
+        related_name="guide_invitations"
     )
+    invited_email = models.EmailField("Email invité", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("guide", "invited_email")
-        verbose_name = "Invitation de guide"
-        verbose_name_plural = "Invitations de guide"
+        unique_together = [
+            ("guide", "invited_user"),
+            ("guide", "invited_email"),
+        ]
 
-    def __str__(self) -> str:
-        return f"{self.invited_email} -> {self.guide.title}"
+    def __str__(self):
+        if self.invited_user:
+            return f"{self.guide.title} → {self.invited_user.username}"
+        return f"{self.guide.title} → {self.invited_email}"

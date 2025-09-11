@@ -1,57 +1,41 @@
 from rest_framework import serializers
+from django.contrib.auth.models import User
 from .models import Guide, Activity, GuideInvitation
-from django.contrib.auth import get_user_model
-
-
-User = get_user_model()
 
 
 class ActivitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
         fields = [
-            "id",
-            "guide",
-            "title",
-            "description",
-            "category",
-            "address",
-            "phone",
-            "opening_hours",
-            "website",
-            "day",
-            "order",
+            'id', 'title', 'description', 'category', 'address', 
+            'phone', 'opening_hours', 'website', 'day', 'order'
         ]
-        read_only_fields = ["id"]
-
-
-class GuideInvitationSerializer(serializers.ModelSerializer):
-    invited_user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False, allow_null=True)
-    class Meta:
-        model = GuideInvitation
-        fields = ["id", "guide", "invited_email", "invited_user", "created_at"]
-        read_only_fields = ["id", "created_at"]
+        read_only_fields = ['id']
 
 
 class GuideSerializer(serializers.ModelSerializer):
     activities = ActivitySerializer(many=True, read_only=True)
+    owner_username = serializers.CharField(source='owner.username', read_only=True)
+    activities_by_day = serializers.SerializerMethodField()
 
     class Meta:
         model = Guide
         fields = [
-            "id",
-            "title",
-            "description",
-            "days",
-            "mobility",
-            "season",
-            "audience",
-            "owner",
-            "created_at",
-            "updated_at",
-            "activities",
+            'id', 'title', 'description', 'days', 'mobility', 'season', 
+            'audience', 'owner', 'owner_username', 'created_at', 'updated_at',
+            'activities', 'activities_by_day'
         ]
-        read_only_fields = ["id", "owner", "created_at", "updated_at", "activities"]
+        read_only_fields = ['id', 'owner', 'created_at', 'updated_at']
+
+    def get_activities_by_day(self, obj):
+        """Organise les activités par jour"""
+        activities_by_day = {}
+        for activity in obj.activities.all():
+            day = activity.day
+            if day not in activities_by_day:
+                activities_by_day[day] = []
+            activities_by_day[day].append(ActivitySerializer(activity).data)
+        return activities_by_day
 
     def create(self, validated_data):
         request = self.context.get("request", None)
@@ -60,6 +44,14 @@ class GuideSerializer(serializers.ModelSerializer):
         else:
             raise serializers.ValidationError("Utilisateur non authentifié")
         return super().create(validated_data)
+
+
+class GuideInvitationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GuideInvitation
+        fields = ['id', 'guide', 'invited_user', 'invited_email', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
 
 class UserBaseSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
@@ -96,21 +88,29 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
-    role = serializers.ChoiceField(choices=["admin", "user"], required=False, write_only=True)
+    role = serializers.ChoiceField(choices=["admin", "user"], write_only=True, required=False)
+    password = serializers.CharField(write_only=True, min_length=8, required=False)
 
     class Meta:
         model = User
-        fields = ["username", "email", "role", "is_active"]
+        fields = ["id", "username", "email", "password", "role", "is_active"]
+        read_only_fields = ["id"]
 
     def update(self, instance, validated_data):
         role = validated_data.pop("role", None)
-        for k, v in validated_data.items():
-            setattr(instance, k, v)
+        password = validated_data.pop("password", None)
+        
         if role is not None:
             instance.is_staff = (role == "admin")
+        
+        if password:
+            instance.set_password(password)
+            
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+            
         instance.save()
         return instance
 
     def to_representation(self, instance):
         return UserBaseSerializer(instance, context=self.context).data
-

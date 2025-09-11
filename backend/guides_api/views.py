@@ -29,7 +29,6 @@ def visible_guides_q(user, prefix: str = "") -> Q:
     email = getattr(user, "email", None)
     if email:
         q |= Q(**{f"{prefix}invitations__invited_email__iexact": email})
-    # Un owner non-admin peut aussi voir ses propres guides
     q |= Q(**{f"{prefix}owner": user})
     return q
 
@@ -47,7 +46,7 @@ class GuideViewSet(viewsets.ModelViewSet):
 
 
 class ActivityViewSet(viewsets.ModelViewSet):
-    queryset = Activity.objects.select_related("guide").all()
+    queryset = Activity.objects.all().select_related("guide")
     serializer_class = ActivitySerializer
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
@@ -58,67 +57,61 @@ class ActivityViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(visible_guides_q(user, prefix="guide__")).distinct()
 
 
-class GuideInvitationViewSet(
-    mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet
-):
-    """
-    - Admin: créer/supprimer/list
-    - Non-admin: lecture seulement des invitations qui le concernent (ou ses guides s'il est owner)
-    """
+class GuideInvitationViewSet(viewsets.ModelViewSet):
+    queryset = GuideInvitation.objects.all().select_related("guide", "invited_user")
     serializer_class = GuideInvitationSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 
     def get_queryset(self):
         user = self.request.user
-        qs = GuideInvitation.objects.select_related("guide", "invited_user")
         if user.is_staff:
-            return qs
-        return qs.filter(
-            Q(invited_user=user)
-            | Q(invited_email__iexact=getattr(user, "email", "") or "___noemail___")
-            | Q(guide__owner=user)
-        ).distinct()
-
-    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
-    def accept(self, request, pk=None):
-        """
-        Acceptation par l'utilisateur connecté si l'invitation correspond à son email.
-        """
-        inv: GuideInvitation = self.get_object()
-        user = request.user
-        email = (user.email or "").lower()
-        if not email or inv.invited_email.lower() != email:
-            return Response({"detail": "Cette invitation ne correspond pas à votre email."}, status=403)
-        inv.invited_user = user
-        inv.save(update_fields=["invited_user"])
-        return Response({"status": "accepted"}, status=200)
+            return self.queryset
+        return self.queryset.filter(guide__owner=user)
 
 
-@api_view(["GET"])
-@permission_classes([permissions.IsAuthenticated])
-def me(request):
-    u = request.user
-    role = "admin" if (u.is_staff or u.is_superuser) else "user"
-    data = {
-        "id": u.id,
-        "username": u.username or "",
-        "email": u.email or "",
-        "role": role,
-        "is_staff": u.is_staff,
-    }
-    return Response(data, status=200)
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    Admin uniquement: CRUD des utilisateurs
-    """
-    queryset = User.objects.all().order_by("id")
-    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+class UserViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    queryset = User.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_serializer_class(self):
         if self.action == "create":
             return UserCreateSerializer
-        if self.action in ("update", "partial_update"):
+        elif self.action in ["update", "partial_update"]:
             return UserUpdateSerializer
         return UserBaseSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return self.queryset
+        return self.queryset.filter(id=user.id)
+
+    def destroy(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Permission non accordée."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().destroy(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return Response(
+                {"detail": "Seuls les administrateurs peuvent créer des utilisateurs."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().create(request, *args, **kwargs)
+
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def me(request):
+    """Retourne les infos de l'utilisateur connecté"""
+    serializer = UserBaseSerializer(request.user)
+    return Response(serializer.data)
