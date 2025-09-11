@@ -16,7 +16,7 @@ from guides_api.models import Guide, Activity, GuideInvitation
 
 User = get_user_model()
 
-# Superuser (is_staff=True, is_superuser=True)
+# Superuser
 su_username = os.getenv("DJANGO_SUPERUSER_USERNAME", "admin")
 su_email    = os.getenv("DJANGO_SUPERUSER_EMAIL", "admin@example.com")
 su_password = os.getenv("DJANGO_SUPERUSER_PASSWORD", "admin")
@@ -42,7 +42,7 @@ try:
 except IntegrityError as e:
     print(f"[seed] Problème création superuser: {e}")
 
-# Utilisateur non admin (is_staff=False, is_superuser=False)
+# User non admin
 demo_username = os.getenv("DJANGO_DEMO_USERNAME", "demouser")
 demo_email    = os.getenv("DJANGO_DEMO_EMAIL", "demo@example.com")
 demo_password = os.getenv("DJANGO_DEMO_PASSWORD", "demo")
@@ -56,7 +56,6 @@ if demo_created:
     demo.save()
     print(f"[seed] Utilisateur simple créé: {demo_username}/{demo_password}")
 else:
-    # S'assure qu'il n'a pas les droits admin
     changed = False
     if demo.is_staff or demo.is_superuser:
         demo.is_staff = False
@@ -65,6 +64,18 @@ else:
     if changed:
         demo.save()
     print("[seed] Utilisateur simple déjà présent")
+
+# Normalisation d'anciennes catégories si nécessaire
+# ex: 'activite' (ancienne valeur) -> 'visite guidee' (nouvelle valeur)
+mapping = {
+    "activite": "visite guidee",
+}
+updated = 0
+for old, new in mapping.items():
+    cnt = Activity.objects.filter(category=old).update(category=new)
+    updated += cnt
+if updated:
+    print(f"[seed] Normalisation catégories: {updated} activité(s) mise(s) à jour.")
 
 # Seed minimal: 1 guide + activités + invitation pour le user non admin
 if not Guide.objects.exists():
@@ -78,14 +89,22 @@ if not Guide.objects.exists():
         audience="amis",
         owner=owner,
     )
+    # Catégories conformes à ton enum actuel
     Activity.objects.create(
-        guide=g, title="Place de la Bourse", description="Miroir d'eau", category="activite", day=1, order=1
+        guide=g, title="Place de la Bourse", description="Visite du centre historique et miroir d'eau",
+        category="visite guidee", day=1, order=1
     )
     Activity.objects.create(
-        guide=g, title="Cité du Vin", description="Visite et dégustation", category="musee", day=1, order=2
+        guide=g, title="Cité du Vin", description="Musée et expériences autour du vin",
+        category="musee", day=1, order=2
     )
     Activity.objects.create(
-        guide=g, title="Dune du Pilat", description="Vue panoramique", category="activite", day=2, order=1
+        guide=g, title="Dune du Pilat", description="Balade en bord de dune",
+        category="plage", day=2, order=1
+    )
+    Activity.objects.create(
+        guide=g, title="Vignobles du Médoc", description="Dégustation et découverte du terroir",
+        category="vignoble", day=2, order=2
     )
     # Invitation de l'utilisateur non admin sur ce guide
     GuideInvitation.objects.get_or_create(guide=g, invited_email=demo_email)

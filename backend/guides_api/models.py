@@ -47,9 +47,16 @@ class Activity(models.Model):
     class Categorie(models.TextChoices):
         MUSEE = "musee", "Musée"
         CHATEAU = "chateau", "Château"
-        ACTIVITE = "activite", "Activité"
+        ACTIVITE_NAUTIQUE = "activite nautique", "Activité nautique"
         PARC = "parc", "Parc"
         GROTTE = "grotte", "Grotte"
+        PLAGE = "plage", "Plage"
+        FESTIVAL = "festival", "Festival"
+        ZOO = "zoo", "Zoo"
+        AQUARIUM = "aquarium", "Aquarium"
+        VISITE_GUIDEE = "visite guidee", "Visite guidée"
+        VIGNOBLE = "vignoble", "Vignoble"
+        
 
     guide = models.ForeignKey(Guide, on_delete=models.CASCADE, related_name="activities")
     title = models.CharField("Titre", max_length=200)
