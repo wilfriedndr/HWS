@@ -1,0 +1,38 @@
+<section class="home">
+  <h1>HWS Guides</h1>
+  <p class="subtitle">Bienvenue ! Connecte-toi pour consulter tes guides.</p>
+
+  <ng-container *ngIf="!connected; else mesGuides">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="card">
+      <label>Identifiant
+        <input type="text" formControlName="username" placeholder="nom d’utilisateur" />
+      </label>
+      <label>Mot de passe
+        <input type="password" formControlName="password" placeholder="mot de passe" />
+      </label>
+      <button type="submit" [disabled]="loadingLogin || form.invalid">
+        {{ loadingLogin ? 'Connexion…' : 'Se connecter' }}
+      </button>
+      <div class="error" *ngIf="loginError">{{ loginError }}</div>
+    </form>
+    <p class="hint">Astuce: utilise un utilisateur de démo créé dans le backend.</p>
+  </ng-container>
+
+  <ng-template #mesGuides>
+    <div class="toolbar">
+      <h2>Mes guides</h2>
+      <button (click)="logout()">Déconnexion</button>
+    </div>
+
+    <div *ngIf="guidesLoading">Chargement…</div>
+    <div class="error" *ngIf="guidesError">{{ guidesError }}</div>
+
+    <ul class="guides" *ngIf="!guidesLoading && !guidesError">
+      <li class="guide" *ngFor="let g of guides">
+        <h3>{{ g.title }}</h3>
+        <p>{{ g.description }}</p>
+        <small>{{ g.days }} jours • {{ g.mobility }} • {{ g.season }} • {{ g.audience }}</small>
+      </li>
+    </ul>
+  </ng-template>
+</section>
