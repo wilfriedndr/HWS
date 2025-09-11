@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ApiService } from '../services/api.service';
+import { ApiService } from '../services/api.service'; 
 import { Guide, Activity } from '../api.types';
 import { CommonModule } from '@angular/common';
 
@@ -33,7 +33,7 @@ export class GuideDetailComponent implements OnInit {
   loadGuideDetail(id: number): void {
     this.loading = true;
     this.error = '';
-    
+
     this.apiService.getMyGuides().subscribe({
       next: (guides) => {
         const guide = guides.find(g => g.id === id);
@@ -55,7 +55,7 @@ export class GuideDetailComponent implements OnInit {
 
   loadActivities(guideId: number): void {
     this.apiService.getGuideActivities(guideId).subscribe({
-      next: (activities) => {
+      next: (activities: Activity[]) => {
         if (this.guide) {
           this.guide.activities = activities;
           this.organizeActivitiesByDay();
@@ -71,17 +71,18 @@ export class GuideDetailComponent implements OnInit {
 
   organizeActivitiesByDay(): void {
     if (!this.guide?.activities) return;
-    
+
     this.activitiesByDay = {};
-    this.guide.activities.forEach(activity => {
+    this.guide.activities.forEach((activity: Activity) => {
       if (!this.activitiesByDay[activity.day]) {
         this.activitiesByDay[activity.day] = [];
       }
       this.activitiesByDay[activity.day].push(activity);
     });
 
+    // Trier les activités par ordre dans chaque jour
     Object.keys(this.activitiesByDay).forEach(day => {
-      this.activitiesByDay[+day].sort((a, b) => a.order - b.order);
+      this.activitiesByDay[+day].sort((a: Activity, b: Activity) => a.order - b.order);
     });
   }
 
