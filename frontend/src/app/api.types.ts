@@ -1,24 +1,55 @@
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  is_staff: boolean;
+  is_superuser: boolean;
+  is_active: boolean;
+  role?: 'admin' | 'user';
+}
+
 export interface Guide {
   id: number;
-  title: string;
-  description: string;
-  days: number;
-  mobility: string;
-  season: string;
-  audience: string;
+  name: string;
+  city: string;
+  category: string;
+  price: number;
+  people_max: number;
+  description?: string;
   activities?: Activity[];
 }
 
 export interface Activity {
   id: number;
-  guide: number;
-  title: string;
-  description: string;
-  category: string;
+  name: string;
+  type: 'voiture' | 'vélo' | 'à pied';
+  description?: string;
   day: number;
   order: number;
-  address?: string;
-  phone?: string;
-  hours?: string;
-  website?: string;
+  category: string;
+}
+
+export interface Invitation {
+  id: number;
+  guide: number;
+  invited_user: number;
+  invited_email: string;
+  created_at: string;
+}
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  access: string;
+  refresh: string;
+  user: {
+    id: number;
+    username: string;
+    email: string;
+    is_staff: boolean;
+    is_superuser: boolean;
+  };
 }
