@@ -13,10 +13,19 @@ class ActivitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
         fields = [
-            'id', 'guide', 'title', 'description', 'category', 'address',
-            'phone', 'opening_hours', 'website', 'day', 'order'
+            "id",
+            "guide",
+            "title",
+            "description",
+            "category",
+            "address",
+            "phone",
+            "opening_hours",
+            "website",
+            "day",
+            "order",
         ]
-        read_only_fields = ['id']
+        read_only_fields = ["id"]
 
     def validate(self, attrs):
         if attrs.get("day", 1) < 1:
@@ -26,22 +35,82 @@ class ActivitySerializer(serializers.ModelSerializer):
         return attrs
 
 
+class MinimalUserSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "role", "is_active", "is_staff"]
+        read_only_fields = ["id", "role", "is_active", "is_staff"]
+
+    def get_role(self, obj):
+        return "admin" if (obj.is_staff or obj.is_superuser) else "user"
+
+
+class GuideInvitationSerializer(serializers.ModelSerializer):
+    invited_user = MinimalUserSerializer(read_only=True)
+    invited_user_id = serializers.PrimaryKeyRelatedField(
+        source="invited_user",
+        queryset=User.objects.all(),
+        write_only=True,
+        required=False,
+        allow_null=True,
+        help_text="ID d'un utilisateur déjà existant à inviter"
+    )
+
+    class Meta:
+        model = GuideInvitation
+        fields = ["id", "guide", "invited_user", "invited_user_id", "invited_email", "created_at"]
+        read_only_fields = ["id", "created_at"]
+
+
 class GuideSerializer(serializers.ModelSerializer):
     activities = ActivitySerializer(many=True, read_only=True)
-    owner_username = serializers.CharField(source='owner.username', read_only=True)
+    owner_username = serializers.CharField(source="owner.username", read_only=True)
     activities_by_day = serializers.SerializerMethodField()
+
+    name = serializers.SerializerMethodField()
+    city = serializers.SerializerMethodField()
+    category_display = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
 
     class Meta:
         model = Guide
         fields = [
-            'id', 'title', 'description', 'days', 'mobility', 'season',
-            'audience', 'owner', 'owner_username', 'created_at', 'updated_at',
-            'activities', 'activities_by_day'
+            "id",
+            "title",
+            "description",
+            "days",
+            "mobility",
+            "season",
+            "audience",
+            "owner",
+            "owner_username",
+            "created_at",
+            "updated_at",
+            "activities",
+            "activities_by_day",
+            "name",
+            "city",
+            "category_display",
+            "price",
         ]
-        read_only_fields = ['id', 'owner', 'created_at', 'updated_at']
+        read_only_fields = ["id", "owner", "created_at", "updated_at"]
+
+    def get_name(self, obj):
+        return getattr(obj, "name", None) or getattr(obj, "title", None)
+
+    def get_city(self, obj):
+        return getattr(obj, "city", None) or getattr(obj, "location", None)
+
+    def get_category_display(self, obj):
+        return getattr(obj, "category", None)
+
+    def get_price(self, obj):
+        return getattr(obj, "price", None)
 
     def get_activities_by_day(self, obj):
-        """Organise les activités par jour"""
+        """Organise les activités par jour pour le détail."""
         activities_by_day = {}
         for activity in obj.activities.all():
             day = activity.day
@@ -57,13 +126,6 @@ class GuideSerializer(serializers.ModelSerializer):
         else:
             raise serializers.ValidationError("Utilisateur non authentifié")
         return super().create(validated_data)
-
-
-class GuideInvitationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GuideInvitation
-        fields = ['id', 'guide', 'invited_user', 'invited_email', 'created_at']
-        read_only_fields = ['id', 'created_at']
 
 
 class UserBaseSerializer(serializers.ModelSerializer):

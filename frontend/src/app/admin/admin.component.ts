@@ -102,7 +102,7 @@ export class AdminComponent implements OnInit {
     this.guidesService.createGuide(body).subscribe({
       next: () => {
         this.reportSuccess('Guide créé avec succès.');
-        this.loadGuides(); // recharger la liste immédiatement
+        this.loadGuides();
       },
       error: (err) => this.reportError('Création guide', err)
     });
@@ -134,7 +134,6 @@ export class AdminComponent implements OnInit {
 
   /* ---------- Helpers d’affichage Invitations ---------- */
   getGuideName(guideRef: any): string {
-    // invitation.guide peut être un id (number) ou un objet { id, title/name }
     if (guideRef && typeof guideRef === 'object') {
       return (guideRef.title || guideRef.name || `Guide #${guideRef.id ?? '—'}`).toString();
     }
@@ -156,7 +155,7 @@ export class AdminComponent implements OnInit {
     return '—';
   }
 
-  /* ---------- Users / Invitations (stubs si besoin) ---------- */
+  /* ---------- Users / Invitations ---------- */
   openCreateUserModal(): void {
     this.reportError('Création utilisateur', 'Non implémenté dans ce snippet.');
   }
@@ -203,11 +202,9 @@ export class AdminComponent implements OnInit {
 
     if (err.error) {
       if (typeof err.error === 'string') return err.error;
-      // DRF: { field: ["message"] } ou { detail: "..." }
       if (typeof err.error.detail === 'string') return err.error.detail;
       if (typeof err.error.message === 'string') return err.error.message;
 
-      // Concatène les 1ers messages des champs si dispo
       try {
         const entries = Object.entries(err.error as Record<string, any>);
         if (entries.length) {
@@ -220,7 +217,6 @@ export class AdminComponent implements OnInit {
           return pretty;
         }
       } catch {
-        /* noop */
       }
     }
     return err.message || 'Erreur réseau';
