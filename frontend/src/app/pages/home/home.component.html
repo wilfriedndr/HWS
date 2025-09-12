@@ -1,3 +1,4 @@
+<!-- HWS/frontend/src/app/pages/home/home.component.html -->
 <section class="home">
   <div class="home-container">
 
@@ -13,12 +14,14 @@
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
           <div class="form-group">
             <label class="form-label">Identifiant</label>
-            <input type="text" formControlName="username" placeholder="nom d'utilisateur" class="form-input" />
+            <input type="text" formControlName="username" placeholder="nom d'utilisateur" class="form-input"
+              (keyup.enter)="onSubmit()" />
           </div>
 
           <div class="form-group">
             <label class="form-label">Mot de passe</label>
-            <input type="password" formControlName="password" placeholder="mot de passe" class="form-input" />
+            <input type="password" formControlName="password" placeholder="mot de passe" class="form-input"
+              (keyup.enter)="onSubmit()" />
           </div>
 
           <button type="submit" [disabled]="loadingLogin || form.invalid" class="btn btn-primary submit-btn">
@@ -39,6 +42,12 @@
             <h2>Mes guides</h2>
             <span class="user-role">Utilisateur connecté</span>
           </div>
+
+          <!-- Bouton Admin visible si admin -->
+          <div class="admin-link" *ngIf="isAdmin">
+            <a routerLink="/admin" class="btn btn-tertiary">Administration</a>
+          </div>
+
           <button (click)="logout()" class="btn btn-secondary logout-btn">
             Déconnexion
           </button>
@@ -55,14 +64,16 @@
         <ul class="guides-list" *ngIf="!guidesLoading && !guidesError && guides.length > 0">
           <li class="guide-item" *ngFor="let g of guides">
             <div class="guide-header">
-              <h4>{{ g.title }}</h4>
-              <span class="guide-days">{{ g.days }} jour{{ g.days > 1 ? 's' : '' }}</span>
+              <h4>{{ g.title ?? g.name ?? 'Sans titre' }}</h4>
+              <span class="guide-days">
+                {{ (g.days ?? 0) }} jour{{ (g.days ?? 0) > 1 ? 's' : '' }}
+              </span>
             </div>
-            <p class="guide-description">{{ g.description }}</p>
+            <p class="guide-description">{{ g.description ?? '—' }}</p>
             <div class="guide-transport">
-              <span class="transport-tag">🚗 {{ g.mobility }}</span>
-              <span class="transport-tag">🌤️ {{ g.season }}</span>
-              <span class="transport-tag">👥 {{ g.audience }}</span>
+              <span class="transport-tag">🚗 {{ g.mobility ?? '—' }}</span>
+              <span class="transport-tag">🌤️ {{ g.season ?? '—' }}</span>
+              <span class="transport-tag">👥 {{ g.audience ?? '—' }}</span>
             </div>
             <div class="guide-actions">
               <button class="btn btn-primary btn-detail" (click)="viewGuideDetails(g.id)">

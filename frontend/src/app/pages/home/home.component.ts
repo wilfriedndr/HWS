@@ -1,81 +1,103 @@
-import { Component, inject } from '@angular/core';
+// HWS/frontend/src/app/pages/home/home.component.ts
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { ApiService } from '../../services/api.service';
-import { Guide } from '../../api.types';
+import { GuidesService, Guide } from '../../services/guides.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export default class HomeComponent {
-  private fb = inject(FormBuilder);
-  private auth = inject(AuthService);
-  private api = inject(ApiService);
-  private router = inject(Router);
+export class HomeComponent implements OnInit {
+  form: FormGroup;
 
+  connected = false;
   loadingLogin = false;
-  loginError: string | null = null;
+  loginError = '';
 
-  guidesLoading = false;
-  guidesError: string | null = null;
   guides: Guide[] = [];
+  guidesLoading = false;
+  guidesError = '';
 
-  form = this.fb.group({
-    username: ['', Validators.required],
-    password: ['', Validators.required]
-  });
-
-  get connected() { return this.auth.isAuthenticated(); }
-
-  ngOnInit() {
-    if (this.connected) this.loadGuides();
+  constructor(
+    private fb: FormBuilder,
+    public auth: AuthService,
+    private guidesService: GuidesService,
+    private router: Router
+  ) {
+    // Important: on initialise le form APRES l’injection de FormBuilder
+    this.form = this.fb.group({
+      username: ['', [Validators.required]],
+      password: ['', [Validators.required]]
+    });
   }
 
-  onSubmit() {
-    if (this.form.invalid) return;
-    this.loadingLogin = true;
-    this.loginError = null;
+  ngOnInit(): void {
+    this.connected = this.auth.isAuthenticated();
+    if (this.connected) this.fetchGuides();
+  }
 
+  get isAdmin(): boolean {
+    return this.auth.isAdmin();
+  }
+
+  onSubmit(): void {
+    if (this.form.invalid || this.loadingLogin) return;
     const { username, password } = this.form.value as { username: string; password: string };
+    this.loadingLogin = true;
+    this.loginError = '';
+
     this.auth.login(username, password).subscribe({
       next: () => {
+        this.connected = true;
         this.loadingLogin = false;
-        this.loadGuides();
+        this.fetchGuides();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.loadingLogin = false;
-        this.loginError = err?.error?.detail ?? 'Échec de la connexion.';
+        this.loginError = this.extractError(err);
       }
     });
   }
 
-  loadGuides() {
-    this.guidesLoading = true;
-    this.guidesError = null;
-    this.api.getMyGuides().subscribe({
-      next: (data) => {
-        this.guides = data;
-        this.guidesLoading = false;
-      },
-      error: () => {
-        this.guidesError = 'Impossible de charger les guides.';
-        this.guidesLoading = false;
-      }
-    });
-  }
-
-  viewGuideDetails(guideId: number) {
-    this.router.navigate(['/guide', guideId]);
-  }
-
-  logout() {
+  logout(): void {
     this.auth.logout();
+    this.connected = false;
     this.guides = [];
+  }
+
+  viewGuideDetails(id: number) {
+    this.router.navigate(['/guide', id]);
+  }
+
+  private fetchGuides() {
+    this.guidesLoading = true;
+    this.guidesError = '';
+    this.guidesService.listGuides().subscribe({
+      next: (res: Guide[] | any) => {
+        this.guides = res || [];
+        this.guidesLoading = false;
+      },
+      error: (err: unknown) => {
+        this.guidesLoading = false;
+        this.guidesError = this.extractError(err);
+      }
+    });
+  }
+
+  private extractError(err: any): string {
+    if (!err) return 'Erreur inconnue';
+    if (typeof err === 'string') return err;
+    if (err.error) {
+      if (typeof err.error === 'string') return err.error;
+      if (typeof err.error.detail === 'string') return err.error.detail;
+      if (err.error.message) return err.error.message;
+    }
+    return err.message || 'Erreur réseau';
   }
 }
