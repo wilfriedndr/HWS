@@ -11,6 +11,7 @@ import { UsersService, User } from '../services/users.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './admin.component.html',
+  styleUrls: ['./admin.component.css'],
   providers: [DatePipe]
 })
 export class AdminComponent implements OnInit {
