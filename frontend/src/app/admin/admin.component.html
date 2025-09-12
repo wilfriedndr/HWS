@@ -1,187 +1,194 @@
+<!-- HWS/frontend/src/app/admin/admin.component.html -->
 <div class="container-fluid py-4">
-    <div class="row">
-        <!-- Sidebar Admin -->
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Panel Administrateur</h5>
-                </div>
-                <div class="list-group list-group-flush">
-                    <button class="list-group-item list-group-item-action" [class.active]="activeTab === 'users'"
-                        (click)="setActiveTab('users')">
-                        <i class="fas fa-users me-2"></i>
-                        Gestion Utilisateurs
-                    </button>
-                    <button class="list-group-item list-group-item-action" [class.active]="activeTab === 'guides'"
-                        (click)="setActiveTab('guides')">
-                        <i class="fas fa-map-marked-alt me-2"></i>
-                        Gestion Guides
-                    </button>
-                    <button class="list-group-item list-group-item-action" [class.active]="activeTab === 'invitations'"
-                        (click)="setActiveTab('invitations')">
-                        <i class="fas fa-envelope me-2"></i>
-                        Gestion Invitations
-                    </button>
-                </div>
-            </div>
+  <div class="row">
+    <!-- Sidebar Admin -->
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-header">
+          <h5>Panel Administrateur</h5>
         </div>
-
-        <!-- Contenu Principal -->
-        <div class="col-md-9">
-
-            <!-- Gestion Utilisateurs -->
-            <div *ngIf="activeTab === 'users'" class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Gestion des Utilisateurs</h5>
-                    <button class="btn btn-success" (click)="openCreateUserModal()">
-                        <i class="fas fa-plus me-2"></i>Créer Utilisateur
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nom d'utilisateur</th>
-                                    <th>Email</th>
-                                    <th>Rôle</th>
-                                    <th>Statut</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let user of users">
-                                    <td>{{ user.id }}</td>
-                                    <td>{{ user.username }}</td>
-                                    <td>{{ user.email }}</td>
-                                    <td>
-                                        <span class="badge" [class.bg-danger]="user.role === 'admin'"
-                                            [class.bg-primary]="user.role === 'user'">
-                                            {{ user.role === 'admin' ? 'Administrateur' : 'Utilisateur' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge" [class.bg-success]="user.is_active"
-                                            [class.bg-secondary]="!user.is_active">
-                                            {{ user.is_active ? 'Actif' : 'Inactif' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-outline-primary" (click)="editUser(user)">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-outline-danger" (click)="deleteUser(user)"
-                                                [disabled]="user.username === currentUsername">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Gestion Guides -->
-            <div *ngIf="activeTab === 'guides'" class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Gestion des Guides</h5>
-                    <button class="btn btn-success" (click)="openCreateGuideModal()">
-                        <i class="fas fa-plus me-2"></i>Créer Guide
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nom</th>
-                                    <th>Ville</th>
-                                    <th>Catégorie</th>
-                                    <th>Prix</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let guide of guides">
-                                    <td>{{ guide.id }}</td>
-                                    <td>{{ guide.name }}</td>
-                                    <td>{{ guide.city }}</td>
-                                    <td>{{ guide.category }}</td>
-                                    <td>{{ guide.price }}€</td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-outline-info" (click)="viewGuide(guide)">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="btn btn-outline-primary" (click)="editGuide(guide)">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-outline-danger" (click)="deleteGuide(guide)">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Gestion Invitations -->
-            <div *ngIf="activeTab === 'invitations'" class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Gestion des Invitations</h5>
-                    <button class="btn btn-success" (click)="openCreateInvitationModal()">
-                        <i class="fas fa-plus me-2"></i>Créer Invitation
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Guide</th>
-                                    <th>Utilisateur Invité</th>
-                                    <th>Email</th>
-                                    <th>Date de Création</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let invitation of invitations">
-                                    <td>{{ invitation.id }}</td>
-                                    <td>{{ getGuideName(invitation.guide) }}</td>
-                                    <td>{{ getUserName(invitation.invited_user) }}</td>
-                                    <td>{{ invitation.invited_email }}</td>
-                                    <td>{{ invitation.created_at | date:'short' }}</td>
-                                    <td>
-                                        <button class="btn btn-outline-danger btn-sm"
-                                            (click)="deleteInvitation(invitation)">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
+        <div class="list-group list-group-flush">
+          <button class="list-group-item list-group-item-action"
+                  [class.active]="activeTab === 'users'"
+                  (click)="setActiveTab('users')">
+            <i class="fas fa-users me-2"></i>
+            Gestion Utilisateurs
+          </button>
+          <button class="list-group-item list-group-item-action"
+                  [class.active]="activeTab === 'guides'"
+                  (click)="setActiveTab('guides')">
+            <i class="fas fa-map-marked-alt me-2"></i>
+            Gestion Guides
+          </button>
+          <button class="list-group-item list-group-item-action"
+                  [class.active]="activeTab === 'invitations'"
+                  (click)="setActiveTab('invitations')">
+            <i class="fas fa-envelope me-2"></i>
+            Gestion Invitations
+          </button>
         </div>
+      </div>
     </div>
+
+    <!-- Contenu Principal -->
+    <div class="col-md-9">
+
+      <!-- Gestion Utilisateurs -->
+      <div *ngIf="activeTab === 'users'" class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Gestion des Utilisateurs</h5>
+          <button class="btn btn-success" (click)="openCreateUserModal()">
+            <i class="fas fa-plus me-2"></i>Créer Utilisateur
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let user of users">
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                  <span class="badge"
+                        [class.bg-danger]="user.role === 'admin'"
+                        [class.bg-primary]="user.role === 'user'">
+                    {{ user.role === 'admin' ? 'Administrateur' : 'Utilisateur' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge"
+                        [class.bg-success]="user.is_active"
+                        [class.bg-secondary]="!user.is_active">
+                    {{ user.is_active ? 'Actif' : 'Inactif' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary" (click)="editUser(user)">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" (click)="deleteUser(user)"
+                            [disabled]="user.username === currentUsername">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gestion Guides -->
+      <div *ngIf="activeTab === 'guides'" class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Gestion des Guides</h5>
+          <button class="btn btn-success" (click)="openCreateGuideModal()">
+            <i class="fas fa-plus me-2"></i>Créer Guide
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Ville</th>
+                <th>Catégorie</th>
+                <th>Prix</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let guide of guides">
+                <td>{{ guide.id }}</td>
+                <td>{{ guide.name }}</td>
+                <td>{{ guide.city }}</td>
+                <td>{{ guide.category }}</td>
+                <td>{{ guide.price }}€</td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <a class="btn btn-outline-info" [routerLink]="['/guide', guide.id]">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    <button class="btn btn-outline-primary" (click)="editGuide(guide)">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" (click)="deleteGuide(guide)">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gestion Invitations -->
+      <div *ngIf="activeTab === 'invitations'" class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Gestion des Invitations</h5>
+          <button class="btn btn-success" (click)="openCreateInvitationModal()">
+            <i class="fas fa-plus me-2"></i>Créer Invitation
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Guide</th>
+                <th>Utilisateur Invité</th>
+                <th>Email</th>
+                <th>Date de Création</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let invitation of invitations">
+                <td>{{ invitation.id }}</td>
+                <td>{{ getGuideName(invitation.guide) }}</td>
+                <td>{{ getUserName(invitation.invited_user) }}</td>
+                <td>{{ invitation.invited_email }}</td>
+                <td>{{ invitation.created_at | date:'short' }}</td>
+                <td>
+                  <button class="btn btn-outline-danger btn-sm" (click)="deleteInvitation(invitation)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <!-- Messages de notification -->
-<div *ngIf="message" class="alert alert-dismissible fade show fixed-top mx-3 mt-3"
-    [class.alert-success]="messageType === 'success'" [class.alert-danger]="messageType === 'error'"
-    style="z-index: 1060;">
-    {{ message }}
-    <button type="button" class="btn-close" (click)="clearMessage()"></button>
+<div *ngIf="message"
+     class="alert alert-dismissible fade show fixed-top mx-3 mt-3"
+     [class.alert-success]="messageType === 'success'"
+     [class.alert-danger]="messageType === 'error'"
+     style="z-index: 1060;">
+  {{ message }}
+  <button type="button" class="btn-close" (click)="clearMessage()"></button>
 </div>
