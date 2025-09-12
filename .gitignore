@@ -19,6 +19,7 @@
 /frontend/*.sublime-workspace
 /frontend/.history
 /frontend/connect.lock
+/frontend/.angular
 
 # VSCode
 /frontend/.vscode/*
@@ -38,4 +39,4 @@ Thumbs.db
 /.venv
 
 #PostgreSQL
-./db-data
+/db-data
