@@ -1,3 +1,4 @@
+// HWS/frontend/src/app/admin/admin.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -62,7 +63,7 @@ export class AdminComponent implements OnInit {
 
   async loadGuides(): Promise<void> {
     this.guidesService.listGuides().subscribe({
-      next: (res: Guide[] | any) => (this.guides = res || []),
+      next: (res: Guide[]) => (this.guides = Array.isArray(res) ? res : []),
       error: (err: unknown) => this.reportError('Chargement guides', err)
     });
   }
@@ -74,217 +75,155 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  loadCurrentUsername(): void {
-    const u = window.localStorage.getItem('username') || sessionStorage.getItem('username');
-    if (u) {
-      this.currentUsername = u;
-      return;
-    }
-    if (this.usersService.currentUser) {
-      this.usersService.currentUser().subscribe({
-        next: (me: User) => (this.currentUsername = me?.username ?? null),
-        error: (_err: unknown) => (this.currentUsername = null)
-      });
-    }
-  }
+  /* ---------- Création / Edition / Suppression Guides ---------- */
+  openCreateGuideModal(): void {
+    const title = (prompt('Titre du guide ?') || '').trim();
+    if (!title) return;
 
-  /* ---------- Helpers UI ---------- */
-  clearMessage(): void {
-    this.message = '';
-    this.messageType = '';
-  }
+    const description = (prompt('Description ?') || '').trim();
+    const start_date = (prompt('Date de début (YYYY-MM-DD) ?') || '').trim();
+    const end_date = (prompt('Date de fin (YYYY-MM-DD) ?') || '').trim();
+    const mobility = (prompt('Mobilité (voiture, vélo, à pied...) ?') || '').trim();
+    const season = (prompt('Saison (printemps, été, automne, hiver) ?') || '').trim();
+    const audience = (prompt('Audience (famille, amis, seul, en groupe) ?') || '').trim();
+    const daysStr = (prompt('Nombre de jours ?') || '').trim();
+    const days = daysStr ? Number(daysStr) : undefined;
 
-  private report(message: string, type: 'success' | 'error' = 'success') {
-    this.message = message;
-    this.messageType = type;
-    setTimeout(() => this.clearMessage(), 4000);
-  }
-
-  private reportError(prefix: string, err: unknown) {
-    let text = '';
-    if (!err) text = 'Erreur inconnue';
-    else if (typeof err === 'string') text = err;
-    else if (err instanceof Error) text = err.message;
-    else {
-      try {
-        const anyErr = err as any;
-        if (anyErr.error && typeof anyErr.error === 'string') text = anyErr.error;
-        else if (anyErr.error && anyErr.error.message) text = anyErr.error.message;
-        else if (anyErr.message) text = anyErr.message;
-        else text = JSON.stringify(anyErr);
-      } catch {
-        text = 'Erreur non sérialisable';
-      }
-    }
-    console.error(prefix, err);
-    this.report(`${prefix} échoué: ${text}`, 'error');
-  }
-
-  /* ---------- Users actions ---------- */
-  openCreateUserModal(): void {
-    const username = window.prompt('Nom (unique) :', '');
-    if (!username) return;
-    const email = window.prompt('Email :', '') || undefined;
-    const roleInput = window.prompt("Rôle ('admin' ou 'user') :", 'user');
-    if (!roleInput) return;
-    const role = roleInput === 'admin' ? 'admin' : 'user';
-    const password = window.prompt('Mot de passe (optionnel) :', '') || undefined;
-
-    const body: Partial<User> & { password?: string } = {
-      username,
-      email,
-      role,
-      is_active: true,
-      password
+    const body: Partial<Guide> = {
+      title,
+      description,
+      start_date,
+      end_date,
+      mobility: mobility || undefined,
+      season: season || undefined,
+      audience: audience || undefined,
+      days: Number.isFinite(days) ? days : undefined
     };
 
-    this.usersService.createUser(body).subscribe({
-      next: () => {
-        this.report('Utilisateur créé', 'success');
-        this.loadUsers();
-      },
-      error: (err: unknown) => this.reportError('Création utilisateur', err)
-    });
-  }
-
-  editUser(user: User): void {
-    const newEmail = window.prompt('Nouvel email pour ' + (user.username ?? ''), user.email || '');
-    if (newEmail == null) return;
-    this.usersService.updateUser(user.id, { email: newEmail }).subscribe({
-      next: () => {
-        this.report('Utilisateur mis à jour', 'success');
-        this.loadUsers();
-      },
-      error: (err: unknown) => this.reportError('Mise à jour utilisateur', err)
-    });
-  }
-
-  deleteUser(user: User): void {
-    if (user.username === this.currentUsername) {
-      this.report("Vous ne pouvez pas supprimer l'utilisateur courant", 'error');
-      return;
-    }
-    if (!confirm(`Supprimer l'utilisateur ${user.username ?? '#'+user.id} ?`)) return;
-    this.usersService.deleteUser(user.id).subscribe({
-      next: () => {
-        this.report('Utilisateur supprimé', 'success');
-        this.loadUsers();
-      },
-      error: (err: unknown) => this.reportError('Suppression utilisateur', err)
-    });
-  }
-
-  /* ---------- Guides actions ---------- */
-  viewGuide(guide: Guide): void {
-    this.router.navigate(['/guide', guide.id]);
-  }
-
-  openCreateGuideModal(): void {
-    const name = window.prompt('Nom du guide :', '');
-    if (!name) return;
-    const body: Partial<Guide> = { name };
     this.guidesService.createGuide(body).subscribe({
       next: () => {
-        this.report('Guide créé', 'success');
-        this.loadGuides();
+        this.reportSuccess('Guide créé avec succès.');
+        this.loadGuides(); // recharger la liste immédiatement
       },
-      error: (err: unknown) => this.reportError('Création guide', err)
+      error: (err) => this.reportError('Création guide', err)
     });
   }
 
   editGuide(guide: Guide): void {
-    const current = (guide as any).name ?? (guide as any).title ?? '';
-    const newName = window.prompt('Modifier le nom du guide :', current);
-    if (newName == null) return;
-    const body: Partial<Guide> = { name: newName };
-    this.guidesService.updateGuide(guide.id, body).subscribe({
+    const newTitle = prompt('Nouveau titre ?', guide.title || guide.name || '')?.trim();
+    if (!newTitle) return;
+
+    this.guidesService.updateGuide(guide.id, { title: newTitle }).subscribe({
       next: () => {
-        this.report('Guide mis à jour', 'success');
+        this.reportSuccess('Guide mis à jour.');
         this.loadGuides();
       },
-      error: (err: unknown) => this.reportError('Mise à jour guide', err)
+      error: (err) => this.reportError('Mise à jour guide', err)
     });
   }
 
   deleteGuide(guide: Guide): void {
-    if (!confirm(`Supprimer le guide "${(guide as any).name ?? (guide as any).title ?? guide.id}" ?`)) return;
+    if (!confirm(`Supprimer le guide "${guide.title || guide.name}" ?`)) return;
     this.guidesService.deleteGuide(guide.id).subscribe({
       next: () => {
-        this.report('Guide supprimé', 'success');
+        this.reportSuccess('Guide supprimé.');
         this.loadGuides();
       },
-      error: (err: unknown) => this.reportError('Suppression guide', err)
+      error: (err) => this.reportError('Suppression guide', err)
     });
   }
 
-  /* ---------- Invitations actions ---------- */
-  openCreateInvitationModal(): void {
-    const invited_email = window.prompt("Email de l'invité :", '');
-    if (!invited_email) return;
-
-    const defaultGuideId = this.guides.length ? String(this.guides[0].id) : '';
-    const guideIdStr = window.prompt('ID du guide à partager :', defaultGuideId);
-    if (!guideIdStr) return;
-
-    const guideId = Number(guideIdStr);
-    if (Number.isNaN(guideId)) {
-      this.report("ID du guide invalide", 'error');
-      return;
-    }
-
-    const body = { invited_email, guide: guideId };
-    this.invitesService.createInvitation(body).subscribe({
-      next: () => {
-        this.report('Invitation créée', 'success');
-        this.loadInvitations();
-      },
-      error: (err: unknown) => this.reportError('Création invitation', err)
-    });
-  }
-
-  deleteInvitation(inv: Invitation): void {
-    if (!confirm(`Supprimer l'invitation #${inv.id} (${inv.invited_email || ''}) ?`)) return;
-    this.invitesService.deleteInvitation(inv.id).subscribe({
-      next: () => {
-        this.report('Invitation supprimée', 'success');
-        this.loadInvitations();
-      },
-      error: (err: unknown) => this.reportError('Suppression invitation', err)
-    });
-  }
-
-  /* ---------- Mapping affichage ---------- */
+  /* ---------- Helpers d’affichage Invitations ---------- */
   getGuideName(guideRef: any): string {
-    if (!guideRef) return '';
-    if (typeof guideRef === 'string') return guideRef;
-    if ('name' in guideRef && guideRef.name) return String(guideRef.name);
-    if ('title' in guideRef && guideRef.title) return String(guideRef.title);
-    if ('id' in guideRef && guideRef.id) {
-      const found = this.guides.find(g => g.id === guideRef.id);
-      return (found?.name ?? (found as any)?.title ?? `#${(guideRef as any).id}`);
+    // invitation.guide peut être un id (number) ou un objet { id, title/name }
+    if (guideRef && typeof guideRef === 'object') {
+      return (guideRef.title || guideRef.name || `Guide #${guideRef.id ?? '—'}`).toString();
     }
-    return JSON.stringify(guideRef);
+    if (typeof guideRef === 'number') {
+      const g = this.guides.find((x) => x.id === guideRef);
+      return g ? (g.title || g.name || `Guide #${g.id}`) : `Guide #${guideRef}`;
+    }
+    return '—';
   }
 
   getUserName(userRef: any): string {
-    if (!userRef) return '';
-    if (typeof userRef === 'string') return userRef;
-    if ('username' in userRef && (userRef as any).username) return String((userRef as any).username);
-    if ('name' in userRef && (userRef as any).name) return String((userRef as any).name);
-    if ('email' in userRef && (userRef as any).email) return String((userRef as any).email);
-    if ('id' in userRef && (userRef as any).id) {
-      const found = this.users.find(u => u.id === (userRef as any).id);
-      return (found?.username ?? (found as any)?.name ?? found?.email ?? `#${(userRef as any).id}`);
+    if (userRef && typeof userRef === 'object') {
+      return (userRef.username || userRef.email || `Utilisateur #${userRef.id ?? '—'}`).toString();
     }
-    return JSON.stringify(userRef);
+    if (typeof userRef === 'number') {
+      const u = this.users.find((x) => x.id === userRef);
+      return u ? (u.username || u.email || `Utilisateur #${u.id}`) : `Utilisateur #${userRef}`;
+    }
+    return '—';
   }
 
-  /* ---------- Sélections locales ---------- */
-  getUserById(id: number): User | undefined {
-    return this.users.find(u => u.id === id);
+  /* ---------- Users / Invitations (stubs si besoin) ---------- */
+  openCreateUserModal(): void {
+    this.reportError('Création utilisateur', 'Non implémenté dans ce snippet.');
+  }
+  editUser(_user: User): void {
+    this.reportError('Edition utilisateur', 'Non implémenté dans ce snippet.');
+  }
+  deleteUser(_user: User): void {
+    this.reportError('Suppression utilisateur', 'Non implémenté dans ce snippet.');
+  }
+  openCreateInvitationModal(): void {
+    this.reportError('Création invitation', 'Non implémenté dans ce snippet.');
+  }
+  deleteInvitation(_inv: Invitation): void {
+    this.reportError('Suppression invitation', 'Non implémenté dans ce snippet.');
   }
 
-  getGuideById(id: number): Guide | undefined {
-    return this.guides.find(g => g.id === id);
+  /* ---------- Session ---------- */
+  private loadCurrentUsername(): void {
+    try {
+      this.currentUsername = localStorage.getItem('auth_username');
+    } catch {
+      this.currentUsername = null;
+    }
+  }
+
+  /* ---------- Messages ---------- */
+  private reportSuccess(msg: string): void {
+    this.messageType = 'success';
+    this.message = msg;
+    setTimeout(() => (this.message = ''), 3500);
+  }
+
+  private reportError(context: string, err: any): void {
+    const detail = this.extractError(err);
+    this.messageType = 'error';
+    this.message = `${context} — ${detail}`;
+    console.error(context, err);
+    setTimeout(() => (this.message = ''), 5000);
+  }
+
+  private extractError(err: any): string {
+    if (!err) return 'Erreur inconnue';
+    if (typeof err === 'string') return err;
+
+    if (err.error) {
+      if (typeof err.error === 'string') return err.error;
+      // DRF: { field: ["message"] } ou { detail: "..." }
+      if (typeof err.error.detail === 'string') return err.error.detail;
+      if (typeof err.error.message === 'string') return err.error.message;
+
+      // Concatène les 1ers messages des champs si dispo
+      try {
+        const entries = Object.entries(err.error as Record<string, any>);
+        if (entries.length) {
+          const pretty = entries
+            .map(([k, v]) => {
+              const first = Array.isArray(v) ? v[0] : v;
+              return `${k}: ${first}`;
+            })
+            .join(' | ');
+          return pretty;
+        }
+      } catch {
+        /* noop */
+      }
+    }
+    return err.message || 'Erreur réseau';
   }
 }

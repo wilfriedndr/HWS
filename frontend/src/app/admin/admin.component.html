@@ -1,3 +1,4 @@
+<!-- HWS/frontend/src/app/admin/admin.component.html -->
 <div class="admin-container">
   <!-- Toolbar avec bouton retour -->
   <div class="admin-toolbar">
@@ -72,7 +73,7 @@
                 <i class="fas fa-edit me-1"></i>Éditer
               </button>
               <button class="btn btn-danger btn-sm" (click)="deleteUser(user)"
-                [disabled]="user.username === currentUsername">
+                      [disabled]="user.username === currentUsername">
                 <i class="fas fa-trash me-1"></i>Supprimer
               </button>
             </div>
@@ -110,9 +111,9 @@
       <tbody>
         <tr *ngFor="let guide of guides">
           <td>{{ guide.id }}</td>
-          <td>{{ guide.name }}</td>
-          <td>{{ guide?.city !== undefined && guide?.city !== null ? guide.city : '—' }}</td>
-          <td>{{ guide?.category !== undefined && guide?.category !== null ? guide.category : '—' }}</td>
+          <td>{{ guide.title || guide.name }}</td>
+          <td>{{ guide?.city ?? '—' }}</td>
+          <td>{{ guide?.category ?? '—' }}</td>
           <td>{{ guide?.price !== undefined && guide?.price !== null ? (guide.price + '€') : '—' }}</td>
           <td>
             <div class="actions">
@@ -178,7 +179,7 @@
 
   <!-- Messages -->
   <div *ngIf="message" class="message" [class.success]="messageType === 'success'"
-    [class.error]="messageType === 'error'">
+       [class.error]="messageType === 'error'">
     {{ message }}
   </div>
 </div>

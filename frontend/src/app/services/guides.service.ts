@@ -1,7 +1,8 @@
+// HWS/frontend/src/app/services/guides.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { appConfig } from '../app.config';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 export interface Guide {
   id: number;
@@ -13,7 +14,7 @@ export interface Guide {
   // Descriptif
   description?: string;
 
-  // Champs fonctionnels affichés dans le Home
+  // Champs fonctionnels
   days?: number;
   mobility?: string;
   season?: string;
@@ -23,6 +24,8 @@ export interface Guide {
   city?: string;
   category?: string;
   price?: number;
+  start_date?: string;
+  end_date?: string;
   created_at?: string;
   updated_at?: string;
 
@@ -42,8 +45,16 @@ export class GuidesService {
 
   constructor(private http: HttpClient) {}
 
-  listGuides(): Observable<Guide[] | PaginatedGuides> {
-    return this.http.get<Guide[] | PaginatedGuides>(`${this.base}/api/guides/`);
+  // Normalise toujours en Guide[]
+  listGuides(): Observable<Guide[]> {
+    const headers = new HttpHeaders({
+      'Cache-Control': 'no-cache',
+      Pragma: 'no-cache',
+      Expires: '0'
+    });
+    return this.http
+      .get<Guide[] | PaginatedGuides>(`${this.base}/api/guides/`, { headers })
+      .pipe(map((res) => (Array.isArray(res) ? res : res?.results ?? [])));
   }
 
   getGuide(id: number): Observable<Guide> {
@@ -54,8 +65,9 @@ export class GuidesService {
     return this.http.post<Guide>(`${this.base}/api/guides/`, body);
   }
 
+  // PATCH partiel pour limiter les 400 liés aux champs requis
   updateGuide(id: number, body: Partial<Guide>): Observable<Guide> {
-    return this.http.put<Guide>(`${this.base}/api/guides/${id}/`, body);
+    return this.http.patch<Guide>(`${this.base}/api/guides/${id}/`, body);
   }
 
   deleteGuide(id: number): Observable<void> {
