@@ -1,4 +1,3 @@
-// HWS/frontend/src/app/guards/admin.guard.ts
 import { Injectable } from '@angular/core';
 import { CanActivate, Router, UrlTree } from '@angular/router';
 import { Observable, of } from 'rxjs';
@@ -10,7 +9,7 @@ export class AdminGuard implements CanActivate {
   constructor(private auth: AuthService, private router: Router) {}
 
   canActivate(): boolean | UrlTree | Observable<boolean | UrlTree> {
-    // 1) Non authentifié → redirection
+    // 1)Non authentifié → redirection
     if (!this.auth.isAuthenticated()) {
       return this.router.createUrlTree(['/']);
     }

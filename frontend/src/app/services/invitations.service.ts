@@ -1,4 +1,3 @@
-// HWS/frontend/src/app/services/invitations.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { appConfig } from '../app.config';

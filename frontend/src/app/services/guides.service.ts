@@ -1,4 +1,3 @@
-// HWS/frontend/src/app/services/guides.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { appConfig } from '../app.config';
@@ -15,10 +14,10 @@ export interface Guide {
   description?: string;
 
   // Champs fonctionnels affichés dans le Home
-  days?: number;     // durée (en jours)
-  mobility?: string; // ex: voiture, transports
-  season?: string;   // ex: été, toute saison
-  audience?: string; // ex: famille, solo, groupe
+  days?: number;
+  mobility?: string;
+  season?: string;
+  audience?: string;
 
   // Divers
   city?: string;

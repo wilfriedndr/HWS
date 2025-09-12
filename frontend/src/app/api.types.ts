@@ -8,7 +8,7 @@ export interface User {
   is_staff: boolean;
   is_superuser: boolean;
   is_active: boolean;
-  role?: 'admin' | 'user'; // Propriété calculée côté client
+  role?: 'admin' | 'user';
 }
 
 // Interfaces d'authentification
@@ -27,18 +27,18 @@ export interface LoginResponse {
 export interface Activity {
   id: number;
   name: string;
-  title?: string; // Alias pour name
+  title?: string;
   description: string;
   website?: string;
   phone?: string;
   location: string;
-  address?: string; // Adresse détaillée
+  address?: string;
   duration_hours: number;
-  hours?: string; // Horaires d'ouverture
+  hours?: string;
   price: number;
   day: number;
   order: number;
-  category?: string; // Catégorie de l'activité
+  category?: string;
   guide: number;
   created_at: string;
   updated_at: string;
@@ -55,16 +55,16 @@ export interface GuideInvitation {
 export interface Guide {
   id: number;
   title: string;
-  name?: string; // Alias pour title
+  name?: string;
   description: string;
   location: string;
-  city?: string; // Ville du guide
+  city?: string;
   days: number;
   mobility: string;
   season: string;
   audience: string;
-  category?: string; // Catégorie du guide
-  price?: number; // Prix du guide
+  category?: string;
+  price?: number;
   owner: number;
   activities: Activity[];
   invitations: GuideInvitation[];

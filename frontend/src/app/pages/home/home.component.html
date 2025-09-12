@@ -1,4 +1,3 @@
-<!-- HWS/frontend/src/app/pages/home/home.component.html -->
 <section class="home">
   <div class="home-container">
 
@@ -43,14 +42,17 @@
             <span class="user-role">Utilisateur connecté</span>
           </div>
 
-          <!-- Bouton Admin visible si admin -->
-          <div class="admin-link" *ngIf="isAdmin">
-            <a routerLink="/admin" class="btn btn-tertiary">Administration</a>
-          </div>
+          <!-- Actions groupées à droite avec espacement -->
+          <div class="actions">
+            <!-- Bouton Admin visible si admin -->
+            <a *ngIf="isAdmin" routerLink="/admin" class="btn btn-tertiary">
+              Administration
+            </a>
 
-          <button (click)="logout()" class="btn btn-secondary logout-btn">
-            Déconnexion
-          </button>
+            <button (click)="logout()" class="btn btn-secondary">
+              Déconnexion
+            </button>
+          </div>
         </div>
       </div>
 

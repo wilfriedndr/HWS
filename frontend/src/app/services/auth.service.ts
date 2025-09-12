@@ -1,4 +1,3 @@
-// HWS/frontend/src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
@@ -12,7 +11,7 @@ type JwtPayload = {
   role?: 'admin' | 'user' | string;
   is_staff?: boolean;
   is_superuser?: boolean;
-  exp?: number; // seconds since epoch
+  exp?: number;
   [k: string]: any;
 };
 
@@ -91,7 +90,7 @@ export class AuthService {
       this.admin$.next(false);
       return of(false);
     }
-    // ENDPOINT CORRIGÉ: /api/me/
+    // ENDPOINT : /api/me/
     return this.http.get<MeResponse>('/api/me/').pipe(
       map(me => {
         const isAdmin =

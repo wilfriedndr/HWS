@@ -1,4 +1,3 @@
-// HWS/frontend/src/app/admin/admin.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';

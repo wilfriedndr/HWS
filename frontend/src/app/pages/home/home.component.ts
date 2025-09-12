@@ -1,4 +1,3 @@
-// HWS/frontend/src/app/pages/home/home.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -30,7 +29,6 @@ export class HomeComponent implements OnInit {
     private guidesService: GuidesService,
     private router: Router
   ) {
-    // Important: on initialise le form APRES l’injection de FormBuilder
     this.form = this.fb.group({
       username: ['', [Validators.required]],
       password: ['', [Validators.required]]

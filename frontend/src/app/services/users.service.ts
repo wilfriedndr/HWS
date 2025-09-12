@@ -1,4 +1,3 @@
-// HWS/frontend/src/app/services/users.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -41,7 +40,6 @@ export class UsersService {
     return this.http.delete<void>(`${this.base}/api/users/${id}/`);
   }
 
-  // Corrigé: profil
   currentUser(): Observable<User> {
     return this.http.get<User>(`${this.base}/api/me/`);
   }
