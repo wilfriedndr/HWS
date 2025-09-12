@@ -109,6 +109,7 @@ class UserViewSet(
             )
         return super().create(request, *args, **kwargs)
 
+
 @api_view(["GET"])
 @permission_classes([permissions.IsAuthenticated])
 def me(request):

@@ -4,13 +4,26 @@ from .models import Guide, Activity, GuideInvitation
 
 
 class ActivitySerializer(serializers.ModelSerializer):
+    guide = serializers.PrimaryKeyRelatedField(
+        queryset=Guide.objects.all(),
+        required=True,
+        help_text="ID du guide auquel rattacher l'activité"
+    )
+
     class Meta:
         model = Activity
         fields = [
-            'id', 'title', 'description', 'category', 'address', 
+            'id', 'guide', 'title', 'description', 'category', 'address',
             'phone', 'opening_hours', 'website', 'day', 'order'
         ]
         read_only_fields = ['id']
+
+    def validate(self, attrs):
+        if attrs.get("day", 1) < 1:
+            raise serializers.ValidationError({"day": "Le jour doit être >= 1."})
+        if attrs.get("order", 1) < 1:
+            raise serializers.ValidationError({"order": "L'ordre doit être >= 1."})
+        return attrs
 
 
 class GuideSerializer(serializers.ModelSerializer):
@@ -21,7 +34,7 @@ class GuideSerializer(serializers.ModelSerializer):
     class Meta:
         model = Guide
         fields = [
-            'id', 'title', 'description', 'days', 'mobility', 'season', 
+            'id', 'title', 'description', 'days', 'mobility', 'season',
             'audience', 'owner', 'owner_username', 'created_at', 'updated_at',
             'activities', 'activities_by_day'
         ]
@@ -99,16 +112,16 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         role = validated_data.pop("role", None)
         password = validated_data.pop("password", None)
-        
+
         if role is not None:
             instance.is_staff = (role == "admin")
-        
+
         if password:
             instance.set_password(password)
-            
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-            
+
         instance.save()
         return instance
 
