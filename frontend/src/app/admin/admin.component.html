@@ -1,4 +1,3 @@
-<!-- HWS/frontend/src/app/admin/admin.component.html -->
 <div class="admin-container">
   <!-- Toolbar avec bouton retour -->
   <div class="admin-toolbar">
@@ -111,9 +110,9 @@
       <tbody>
         <tr *ngFor="let guide of guides">
           <td>{{ guide.id }}</td>
-          <td>{{ guide.title || guide.name }}</td>
-          <td>{{ guide?.city ?? '—' }}</td>
-          <td>{{ guide?.category ?? '—' }}</td>
+          <td>{{ guide.name }}</td>
+          <td>{{ guide?.city !== undefined && guide?.city !== null ? guide.city : '—' }}</td>
+          <td>{{ guide?.category !== undefined && guide?.category !== null ? guide.category : '—' }}</td>
           <td>{{ guide?.price !== undefined && guide?.price !== null ? (guide.price + '€') : '—' }}</td>
           <td>
             <div class="actions">

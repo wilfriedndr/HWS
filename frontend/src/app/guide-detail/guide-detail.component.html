@@ -1,98 +1,30 @@
-<div class="guide-detail-container">
-  <!-- bouton retour -->
-  <div class="header">
-    <button class="btn-back" (click)="goBack()">
-      <i class="fas fa-arrow-left"></i> Retour aux guides
-    </button>
-  </div>
+<!-- HWS/frontend/src/app/guide-detail.component.html -->
+<div *ngIf="loading()">Chargement…</div>
+<div *ngIf="error() as err" class="error">{{ err }}</div>
 
-  <!-- chargement des guides-->
-  <div *ngIf="loading" class="loading">
-    <div class="spinner"></div>
-    <p>Chargement des détails du guide...</p>
-  </div>
+<section *ngIf="!loading() && !error() && guide() as g">
+  <h1>{{ g.title }}</h1>
+  <p>{{ g.description }}</p>
+  <p class="muted">
+    Jours: {{ g.days }} • Mobilité: {{ g.mobility }} • Saison: {{ g.season }} • Public: {{ g.audience }}
+  </p>
 
-  <!-- erreur -->
-  <div *ngIf="error && !loading" class="error">
-    <i class="fas fa-exclamation-triangle"></i>
-    <p>{{ error }}</p>
-    <button class="btn btn-primary" (click)="goBack()">Retour aux guides</button>
-  </div>
+  <h2>Activités</h2>
 
-  <!-- contenu du guide -->
-  <div *ngIf="guide && !loading && !error" class="guide-content">
-    <!-- en-tête du guide -->
-    <div class="guide-header">
-      <h1>{{ guide.title }}</h1>
-      <div class="guide-meta">
-        <div class="meta-item">
-          <i class="fas fa-calendar"></i>
-          <span>{{ guide.days }} jour{{ guide.days > 1 ? 's' : '' }}</span>
-        </div>
-        <div class="meta-item">
-          <i class="fas fa-car"></i>
-          <span>{{ guide.mobility }}</span>
-        </div>
-        <div class="meta-item">
-          <i class="fas fa-leaf"></i>
-          <span>{{ guide.season }}</span>
-        </div>
-        <div class="meta-item">
-          <i class="fas fa-users"></i>
-          <span>{{ guide.audience }}</span>
-        </div>
-      </div>
-      <p class="guide-description">{{ guide.description }}</p>
-    </div>
+  <ng-container *ngIf="activitiesSorted().length > 0; else empty">
+    <ul>
+      <li *ngFor="let a of activitiesSorted()">
+        <strong>Jour {{ a.day }} • Ordre {{ a.order }}</strong> — {{ a.title }}
+        <div class="muted">{{ a.category }}</div>
+        <div *ngIf="a.description">{{ a.description }}</div>
+        <div *ngIf="a.opening_hours">Horaires: {{ a.opening_hours }}</div>
+        <div *ngIf="a.address">{{ a.address }}</div>
+        <a *ngIf="a.website" [href]="a.website" target="_blank" rel="noopener">Site web</a>
+      </li>
+    </ul>
+  </ng-container>
 
-    <!-- programme -->
-    <div class="days-program">
-      <h2>Programme détaillé</h2>
-
-      <div *ngFor="let day of getDays()" class="day-section">
-        <h3 class="day-title">
-          <i class="fas fa-calendar-day"></i>
-          Jour {{ day }}
-        </h3>
-
-        <div class="activities-list">
-          <div *ngFor="let activity of activitiesByDay[day]; let i = index" class="activity-card">
-            <div class="activity-header">
-              <span class="activity-order">{{ activity.order }}</span>
-              <h4 class="activity-title">{{ activity.title }}</h4>
-              <span class="activity-category">{{ getActivityCategoryLabel(activity.category) }}</span>
-            </div>
-
-            <p *ngIf="activity.description" class="activity-description">
-              {{ activity.description }}
-            </p>
-
-            <div class="activity-details">
-              <div *ngIf="activity.address" class="detail-item">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>{{ activity.address }}</span>
-              </div>
-
-              <div *ngIf="activity.hours" class="detail-item">
-                <i class="fas fa-clock"></i>
-                <span>{{ activity.hours }}</span>
-              </div>
-
-              <div *ngIf="activity.phone" class="detail-item">
-                <i class="fas fa-phone"></i>
-                <a href="tel:{{ activity.phone }}">{{ activity.phone }}</a>
-              </div>
-
-              <div *ngIf="activity.website" class="detail-item">
-                <i class="fas fa-globe"></i>
-                <a href="{{ activity.website }}" target="_blank" rel="noopener noreferrer">
-                  Site web
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+  <ng-template #empty>
+    <p>Aucune activité pour ce guide.</p>
+  </ng-template>
+</section>

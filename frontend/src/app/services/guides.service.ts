@@ -1,4 +1,3 @@
-// HWS/frontend/src/app/services/guides.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { appConfig } from '../app.config';
@@ -45,7 +44,6 @@ export class GuidesService {
 
   constructor(private http: HttpClient) {}
 
-  // Normalise toujours en Guide[]
   listGuides(): Observable<Guide[]> {
     const headers = new HttpHeaders({
       'Cache-Control': 'no-cache',
@@ -65,7 +63,6 @@ export class GuidesService {
     return this.http.post<Guide>(`${this.base}/api/guides/`, body);
   }
 
-  // PATCH partiel pour limiter les 400 liés aux champs requis
   updateGuide(id: number, body: Partial<Guide>): Observable<Guide> {
     return this.http.patch<Guide>(`${this.base}/api/guides/${id}/`, body);
   }
