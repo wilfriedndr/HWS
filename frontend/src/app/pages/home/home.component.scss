@@ -1,4 +1,5 @@
-:host, .home {
+:host,
+.home {
   display: block;
   min-height: 100vh;
   background: #f7f9fc;
@@ -59,11 +60,16 @@
   border-radius: 6px;
   padding: 8px 12px;
   font-weight: 600;
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease;
 }
 
 .btn-primary {
   background: #2563eb;
   color: #fff;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.05);
 }
 
 .btn-secondary {
@@ -121,13 +127,105 @@
   gap: 12px;
 }
 
-.guide-item {
-  background: #fff;
-  border-radius: 8px;
-  padding: 14px;
-  border: 1px solid #e5e7eb;
+/* Animation d’apparition en cascade */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
+.guide-item {
+  position: relative;
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+  will-change: transform, box-shadow, border-color;
+  transition:
+    transform 220ms cubic-bezier(.2, .6, .2, 1),
+    box-shadow 220ms cubic-bezier(.2, .6, .2, 1),
+    border-color 220ms cubic-bezier(.2, .6, .2, 1),
+    background-color 220ms ease;
+
+  /* apparition progressive */
+  opacity: 0;
+  animation: fadeInUp 400ms both;
+}
+
+/* Délais progressifs pour l’apparition (jusqu’à 10 items) */
+@for $i from 1 through 10 {
+  .guides-list>.guide-item:nth-child(#{$i}) {
+    animation-delay: #{($i * 40)}ms;
+  }
+}
+
+/* Effet hover/focus: léger lift + ombre marquée + bord coloré */
+.guide-item:hover,
+.guide-item:focus-within {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border-color: #2563eb;
+}
+
+/* Accents visuels au hover: titre et badge jours */
+.guide-item:hover .guide-title,
+.guide-item:focus-within .guide-title {
+  color: #1d4ed8;
+}
+
+.guide-item:hover .guide-days,
+.guide-item:focus-within .guide-days {
+  background: rgba(37, 99, 235, 0.08);
+  color: #1d4ed8;
+}
+
+/* Indicateur subtil autour de la carte */
+.guide-item::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 10px;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+  opacity: 0;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15) inset;
+}
+
+.guide-item:hover::after,
+.guide-item:focus-within::after {
+  opacity: 1;
+}
+
+/* Interaction clavier: on rend l’item focusable */
+.guide-item {
+  outline: none;
+}
+
+.guide-item:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, .4);
+  outline-offset: 2px;
+}
+
+/* Micro-animation du bouton de détail quand on survole la carte */
+.btn-detail {
+  transform: translateX(0);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.guide-item:hover .btn-detail,
+.guide-item:focus-within .btn-detail {
+  transform: translateX(3px);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
+/* Contenu de la carte */
 .guide-header {
   display: flex;
   align-items: center;
@@ -135,9 +233,18 @@
   gap: 8px;
 }
 
+.guide-title {
+  margin: 0;
+  transition: color 200ms ease;
+}
+
 .guide-days {
   color: #374151;
   font-weight: 600;
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: #f3f4f6;
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 .guide-description {
@@ -154,6 +261,14 @@
 .empty-state {
   text-align: center;
   color: #6b7280;
+}
+
+/* Respect des préférences d’accessibilité (réduction d’animations) */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* Responsive */

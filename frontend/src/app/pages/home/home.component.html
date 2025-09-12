@@ -64,19 +64,24 @@
         <div class="error" *ngIf="guidesError">{{ guidesError }}</div>
 
         <ul class="guides-list" *ngIf="!guidesLoading && !guidesError && guides.length > 0">
-          <li class="guide-item" *ngFor="let g of guides">
+          <li class="guide-item" *ngFor="let g of guides; let i = index" tabindex="0"
+            (keyup.enter)="viewGuideDetails(g.id)"
+            [attr.aria-label]="'Ouvrir le guide ' + (g.title ?? g.name ?? 'Sans titre')">
             <div class="guide-header">
-              <h4>{{ g.title ?? g.name ?? 'Sans titre' }}</h4>
+              <h4 class="guide-title">{{ g.title ?? g.name ?? 'Sans titre' }}</h4>
               <span class="guide-days">
                 {{ (g.days ?? 0) }} jour{{ (g.days ?? 0) > 1 ? 's' : '' }}
               </span>
             </div>
+
             <p class="guide-description">{{ g.description ?? '—' }}</p>
+
             <div class="guide-transport">
               <span class="transport-tag">🚗 {{ g.mobility ?? '—' }}</span>
               <span class="transport-tag">🌤️ {{ g.season ?? '—' }}</span>
               <span class="transport-tag">👥 {{ g.audience ?? '—' }}</span>
             </div>
+
             <div class="guide-actions">
               <button class="btn btn-primary btn-detail" (click)="viewGuideDetails(g.id)">
                 Voir détails →
