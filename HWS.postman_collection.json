@@ -1,0 +1,872 @@
+{
+	"info": {
+		"_postman_id": "cf8ba63e-540a-4ecf-8fa8-705d89d6b11e",
+		"name": "HWS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9544683"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "{{base_url}}/api/token/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"200 OK\", () => pm.response.to.have.status(200));\r",
+									"const data = pm.response.json();\r",
+									"pm.environment.set(\"access_token\", data.access);\r",
+									"pm.environment.set(\"refresh_token\", data.refresh);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/token/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"token",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/token/refresh/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"200 OK\", () => pm.response.to.have.status(200));\r",
+									"\r",
+									"let data = {};\r",
+									"try { data = pm.response.json(); } catch (e) {}\r",
+									"\r",
+									"if (data.access) {\r",
+									"  pm.environment.set(\"access_token\", data.access);\r",
+									"  console.log(\"access_token rafraîchi.\");\r",
+									"} else {\r",
+									"  console.warn(\"Pas d'access dans la réponse de refresh.\");\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"refresh\": \"{{refresh_token}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/token/refresh/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"token",
+								"refresh",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/me/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"200 OK\", () => pm.response.to.have.status(200));\r",
+									"\r",
+									"let data = {};\r",
+									"try { data = pm.response.json(); } catch (e) {}\r",
+									"\r",
+									"pm.test(\"Structure profil minimale\", function () {\r",
+									"  pm.expect(data).to.have.property(\"id\");\r",
+									"  pm.expect(data).to.have.property(\"email\");\r",
+									"  pm.expect(data).to.have.property(\"role\"); // \"admin\" | \"user\"\r",
+									"});\r",
+									"\r",
+									"// Sauvegarde pour la suite (Users/Guides)\r",
+									"if (data.id) pm.environment.set(\"me_id\", data.id);\r",
+									"if (data.role) pm.environment.set(\"me_role\", data.role);\r",
+									"console.log(\"Profil courant:\", data);\r",
+									"\r",
+									"// Aide en cas d'expiration\r",
+									"if (pm.response.code === 401) {\r",
+									"  console.warn(\"Token expiré ? Lance d'abord POST /api/token/refresh/ puis réessaie /api/me/.\");\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/me/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"me",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{access_token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Guides",
+			"item": [
+				{
+					"name": "{{base_url}}/api/guides/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));\r",
+									"let guides = pm.response.json();\r",
+									"pm.environment.set(\"guides_count\", Array.isArray(guides) ? guides.length : 0);\r",
+									"pm.test(\"Response is array\", () => pm.expect(Array.isArray(guides)).to.be.true);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/guides/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"guides",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/guides/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 201\", () => pm.response.to.have.status(201));\r",
+									"let json = pm.response.json();\r",
+									"pm.environment.set(\"guide_id\", json.id);\r",
+									"pm.environment.set(\"guide_title\", json.title);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"Guide de Test\",\r\n  \"description\": \"Description pour test Postman\",\r\n  \"start_date\": \"2025-09-15\",\r\n  \"end_date\": \"2025-09-20\",\r\n  \"mobility\": \"voiture\",\r\n  \"season\": \"été\",\r\n  \"audience\": \"famille\",\r\n  \"days\": \"5\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/guides/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"guides",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/guides/{{guide_id}}/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));\r",
+									"let g = pm.response.json();\r",
+									"pm.test(\"Guide id matches\", () => pm.expect(g.id).to.eql(parseInt(pm.environment.get(\"guide_id\"))));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/guides/{{guide_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"guides",
+								"{{guide_id}}",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/guides/{{guide_id}}/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));\r",
+									"let g = pm.response.json();\r",
+									"pm.test(\"Description updated\", () => pm.expect(g.description).to.eql(\"Description mise à jour via Postman\"));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"description\": \"Description mise à jour via Postman\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/guides/{{guide_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"guides",
+								"{{guide_id}}",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/guides/{{guide_id}}/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 204 or 200\", () => pm.expect([204,200]).to.include(pm.response.code));\r",
+									"pm.environment.unset(\"guide_id\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/guides/{{guide_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"guides",
+								"{{guide_id}}",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/activites/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));\r",
+									"let acts = pm.response.json();\r",
+									"pm.environment.set(\"activities_count\", Array.isArray(acts) ? acts.length : 0);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/activites/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"activites",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/activites/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 201\", () => pm.response.to.have.status(201));\r",
+									"let json = pm.response.json();\r",
+									"pm.environment.set(\"activity_id\", json.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"guide\": {{guide_id}},\r\n    \"title\": \"parc animal\",\r\n    \"description\": \"Activité test\",\r\n    \"category\": \"visite guidee\",\r\n    \"address\": \"\",\r\n    \"phone\": \"\",\r\n    \"opening_hours\": \"\",\r\n    \"website\": \"\",\r\n    \"day\": 1,\r\n    \"order\": 1\r\n}\r\n\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/activites/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"activites",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/activites/?guide={{guide_id}}",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/activites/?guide={{guide_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"activites",
+								""
+							],
+							"query": [
+								{
+									"key": "guide",
+									"value": "{{guide_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/invitations/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", () => pm.response.to.have.status(200));\r",
+									"let invs = pm.response.json();\r",
+									"pm.environment.set(\"invitations_count\", Array.isArray(invs) ? invs.length : 0);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/invitations/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"invitations",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/invitations/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 201\", () => pm.response.to.have.status(201));\r",
+									"let json = pm.response.json();\r",
+									"pm.environment.set(\"invitation_id\", json.id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"guide\": {{guide_id}},\r\n    \"invited_email\": \"invitee@example.com\",\r\n    \"invited_user\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/invitations/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"invitations",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/invitations/{{invitation_id}}/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 204 or 200\", () => pm.expect([204,200]).to.include(pm.response.code));\r",
+									"pm.environment.unset(\"invitation_id\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/invitations/{{invitation_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"invitations",
+								"{{invitation_id}}",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "{{base_url}}/api/users/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/users/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"201 Created\", () => pm.response.to.have.status(201));\r",
+									"const u = pm.response.json();\r",
+									"pm.expect(u).to.have.property(\"id\");\r",
+									"pm.environment.set(\"last_user_id\", u.id);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"wil\",\r\n    \"email\": \"wil@example.com\",\r\n    \"password\": \"wil12345\",\r\n    \"role\": \"user\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/users/{{last_user_id}}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"200 OK\", () => pm.response.to.have.status(200));\r",
+									"pm.test(\"username présent\", () => pm.expect(pm.response.json()).to.have.property(\"username\"));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{last_user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{last_user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/users/{{last_user_id}}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"200 OK\", () => pm.response.to.have.status(200));\r",
+									"pm.test(\"email maj\", () => pm.expect(pm.response.json().email).to.eql(\"paul.maj@example.com\"));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"changeMail@example.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/{{last_user_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{last_user_id}}",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "{{base_url}}/api/users/{{last_user_id}}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"204 No Content\", () => pm.response.to.have.status(204));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{last_user_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{last_user_id}}",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
