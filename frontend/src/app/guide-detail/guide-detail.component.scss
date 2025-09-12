@@ -6,10 +6,12 @@
 
 .header {
   margin-bottom: 30px;
+  display: flex;
+  justify-content: center;
 }
 
 .btn-back {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
   padding: 10px 20px;
@@ -28,7 +30,8 @@
   border-color: #adb5bd;
 }
 
-.loading {
+.loading,
+.error {
   text-align: center;
   padding: 60px 20px;
 }
@@ -44,13 +47,16 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error {
-  text-align: center;
-  padding: 60px 20px;
   color: #dc3545;
 }
 
@@ -64,6 +70,7 @@
   margin-bottom: 40px;
   padding-bottom: 30px;
   border-bottom: 2px solid #dee2e6;
+  text-align: center;
 }
 
 .guide-header h1 {
@@ -75,12 +82,13 @@
 .guide-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 12px;
   margin-bottom: 20px;
+  justify-content: center;
 }
 
 .meta-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   background: #f8f9fa;
@@ -98,13 +106,20 @@
   font-size: 1.1rem;
   line-height: 1.6;
   color: #6c757d;
-  margin: 0;
+  margin: 0 auto;
+  max-width: 800px;
+}
+
+.days-program {
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .days-program h2 {
   color: #2c3e50;
   margin-bottom: 30px;
   font-size: 2rem;
+  text-align: center;
 }
 
 .day-section {
@@ -135,12 +150,12 @@
   border: 1px solid #dee2e6;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.2s;
 }
 
 .activity-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .activity-header {
@@ -201,7 +216,7 @@
   color: #495057;
 }
 
-.detail-item i {
+.detail-item .icon {
   color: #007bff;
   width: 16px;
   text-align: center;
@@ -221,26 +236,26 @@
   .guide-detail-container {
     padding: 15px;
   }
-  
+
   .guide-header h1 {
     font-size: 2rem;
   }
-  
+
   .guide-meta {
     gap: 10px;
   }
-  
+
   .meta-item {
     font-size: 0.8rem;
     padding: 6px 12px;
   }
-  
+
   .activity-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
-  
+
   .activity-title {
     font-size: 1.1rem;
   }

@@ -1,30 +1,86 @@
-<!-- HWS/frontend/src/app/guide-detail.component.html -->
-<div *ngIf="loading()">Chargement…</div>
-<div *ngIf="error() as err" class="error">{{ err }}</div>
+<div class="guide-detail-container">
+  <!-- État chargement -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <div>Chargement…</div>
+  </div>
 
-<section *ngIf="!loading() && !error() && guide() as g">
-  <h1>{{ g.title }}</h1>
-  <p>{{ g.description }}</p>
-  <p class="muted">
-    Jours: {{ g.days }} • Mobilité: {{ g.mobility }} • Saison: {{ g.season }} • Public: {{ g.audience }}
-  </p>
+  <!-- État erreur -->
+  <div *ngIf="!loading && error" class="error">
+    <i>⚠️</i>
+    <div>{{ error }}</div>
+  </div>
 
-  <h2>Activités</h2>
+  <!-- Contenu -->
+  <section *ngIf="!loading && !error && guide as g">
+    <div class="header">
+      <button class="btn-back" (click)="goBack()">← Retour</button>
+    </div>
 
-  <ng-container *ngIf="activitiesSorted().length > 0; else empty">
-    <ul>
-      <li *ngFor="let a of activitiesSorted()">
-        <strong>Jour {{ a.day }} • Ordre {{ a.order }}</strong> — {{ a.title }}
-        <div class="muted">{{ a.category }}</div>
-        <div *ngIf="a.description">{{ a.description }}</div>
-        <div *ngIf="a.opening_hours">Horaires: {{ a.opening_hours }}</div>
-        <div *ngIf="a.address">{{ a.address }}</div>
-        <a *ngIf="a.website" [href]="a.website" target="_blank" rel="noopener">Site web</a>
-      </li>
-    </ul>
-  </ng-container>
+    <div class="guide-header">
+      <h1>{{ g.title || g.name }}</h1>
 
-  <ng-template #empty>
-    <p>Aucune activité pour ce guide.</p>
-  </ng-template>
-</section>
+      <div class="guide-meta" *ngIf="g.days || g.mobility || g.season || g.audience || g.location">
+        <div class="meta-item" *ngIf="g.days"><i>📅</i> <span>Jours: {{ g.days }}</span></div>
+        <div class="meta-item" *ngIf="g.mobility"><i>🚶</i> <span>Mobilité: {{ g.mobility }}</span></div>
+        <div class="meta-item" *ngIf="g.season"><i>🍃</i> <span>Saison: {{ g.season }}</span></div>
+        <div class="meta-item" *ngIf="g.audience"><i>👥</i> <span>Public: {{ g.audience }}</span></div>
+        <div class="meta-item" *ngIf="g.location"><i>📍</i> <span>Lieu: {{ g.location }}</span></div>
+      </div>
+
+      <p class="guide-description" *ngIf="g.description">{{ g.description }}</p>
+    </div>
+
+    <div class="days-program">
+      <h2>Activités</h2>
+
+      <ng-container *ngIf="getDays().length > 0; else empty">
+        <div *ngFor="let day of getDays()" class="day-section">
+          <h3 class="day-title">Jour {{ day }}</h3>
+
+          <div class="activities-list">
+            <div *ngFor="let activity of activitiesByDay[day]" class="activity-card">
+              <div class="activity-header">
+                <span class="activity-order">#{{ activity.order }}</span>
+                <h4 class="activity-title">{{ activity.title || activity.name }}</h4>
+                <span class="activity-category" *ngIf="activity.category">
+                  {{ getActivityCategoryLabel(activity.category) }}
+                </span>
+              </div>
+
+              <p *ngIf="activity.description" class="activity-description">
+                {{ activity.description }}
+              </p>
+
+              <div class="activity-details">
+                <div *ngIf="activity.address || activity.location" class="detail-item">
+                  <span class="icon">📍</span>
+                  <span>{{ activity.address || activity.location }}</span>
+                </div>
+
+                <div *ngIf="activity.hours" class="detail-item">
+                  <span class="icon">🕒</span>
+                  <span>{{ activity.hours }}</span>
+                </div>
+
+                <div *ngIf="activity.phone" class="detail-item">
+                  <span class="icon">📞</span>
+                  <a [href]="'tel:' + activity.phone">{{ activity.phone }}</a>
+                </div>
+
+                <div *ngIf="activity.website" class="detail-item">
+                  <span class="icon">🌐</span>
+                  <a [href]="activity.website" target="_blank" rel="noopener">Site web</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #empty>
+        <p style="text-align:center; color:#6c757d;">Aucune activité pour ce guide.</p>
+      </ng-template>
+    </div>
+  </section>
+</div>
