@@ -5,6 +5,7 @@ Application web scindée en deux exercices (front Angular et back Django) avec u
 ## Sommaire
 - [HWS — Test technique (Angular + Django + PostgreSQL)](#hws--test-technique-angular--django--postgresql)
   - [Sommaire](#sommaire)
+  - [Contexte et choix des technologies](#contexte-et-choix-des-technologies)
   - [Prérequis](#prérequis)
   - [Démarrage rapide (Docker)](#démarrage-rapide-docker)
   - [Pour arrêter:](#pour-arrêter)
@@ -15,6 +16,41 @@ Application web scindée en deux exercices (front Angular et back Django) avec u
   - [Commandes utiles](#commandes-utiles)
   - [Résolution de problèmes](#résolution-de-problèmes)
   - [Ce qui est livré / Ce qui manque](#ce-qui-est-livré--ce-qui-manque)
+
+---
+## Contexte et choix des technologies
+
+Pour ce test technique, nous avons choisi une stack technologique moderne et robuste qui permet de couvrir l'ensemble des besoins du projet tout en assurant une bonne maintenabilité et évolutivité.
+
+### Frontend : Angular
+- **Pourquoi Angular ?**
+  - Framework mature et bien documenté avec une forte communauté
+  - Architecture modulaire et scalable
+  - Typage fort avec TypeScript pour une meilleure maintenabilité
+  - Outils de développement intégrés (CLI, DevTools)
+  - Bonne intégration avec les API REST
+
+- **Version utilisée :**
+  - Angular 20.2.4
+  - TypeScript 5.9.2
+  - Node.js 22.19.0
+  - npm 10.9.3
+
+### Backend : Django
+- **Pourquoi Django ?**
+  - Framework Python rapide et sécurisé
+  - Architecture "batteries included" avec de nombreuses fonctionnalités intégrées
+  - ORM puissant pour l'interaction avec la base de données
+  - Sécurité renforcée (protection contre les CSRF, XSS, SQL injection)
+  - Bonne documentation et communauté active
+
+### Base de données : PostgreSQL
+- **Pourquoi PostgreSQL ?**
+  - SGBD relationnel open-source robuste et performant
+  - Support des transactions ACID
+  - Fonctionnalités avancées (indexation, vues matérialisées, etc.)
+  - Bonne intégration avec Django via l'ORM
+  - Scalabilité et fiabilité pour les applications professionnelles
 
 ---
 
